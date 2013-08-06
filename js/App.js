@@ -1,15 +1,5 @@
 $(function() {
 
-	// map fixer
-	(function(f) {
-		f();
-		$(window).resize(f);
-	})(function() {
-		$('#map_canvas').css({
-			height: $(window).height() + 'px'
-		});
-	});
-
 	var AppView = Backbone.View.extend({
 		el: '#wrapper',
 		events: {
@@ -80,21 +70,25 @@ $(function() {
 			this.posMarker = null;
 
 			// short-cut key settings 
+			var opts = {
+				'type': 'keydown',
+				'propagate': true,
+				'target': document
+			};
 			var map = this.map;
 			shortcut.add("Shift+PageUp", function() {
 				map.setZoom(map.getZoom() + 1);
-			}, {
-				'type': 'keydown',
-				'propagate': true,
-				'target': document
-			});
+			}, opts);
 			shortcut.add("Shift+PageDown", function() {
 				map.setZoom(map.getZoom() - 1);
-			}, {
-				'type': 'keydown',
-				'propagate': true,
-				'target': document
-			});
+			}, opts);
+
+			shortcut.add("Ctrl+Enter", function() {
+				$('#informations').slideToggle('fast');
+			}, opts);
+			shortcut.add("Ctrl+Q", function() {
+				$('#input_address').focus();
+			}, opts);
 		},
 		onSearch: function(key, callback) {
 			var coord = this.getLatLngFromString(key);
@@ -292,7 +286,7 @@ $(function() {
 		}
 	});
 	var AddressUnitView = Backbone.View.extend({
-		tagName: 'p',
+		tagName: 'div',
 		initialize: function() {
 			_.bindAll(this, 'render', 'remove');
 			this.template = _.template($('#tmpl_address_info').html());
@@ -314,23 +308,26 @@ $(function() {
 	});
 	var AddressCollection = Backbone.Collection.extend({});
 
-	// short-cut key settings 
-	shortcut.add("Ctrl+Enter", function() {
-		$('#informations').slideToggle('fast');
-	}, {
-		'type': 'keydown',
-		'propagate': true,
-		'target': document
-	});
-	shortcut.add("Ctrl+Q", function() {
-		$('#input_address').focus();
-	}, {
-		'type': 'keydown',
-		'propagate': true,
-		'target': document
-	});
 
 	// finally, kick AppView to start the application.
 	window.appView = new AppView();
 
+
+	// map & address_info fixer
+	(function(f) {
+		f();
+		$(window).resize(f);
+	})(function() {
+		$('#map_canvas').css({
+			height: $(window).height() + 'px'
+		});
+		var info = $('#informations').height(),
+			areaInfo = $('#area_info').height() || 80,
+			clicked = $('#clicked_point').height() || 80,
+			h2 = $('#informations h2').outerHeight(),
+			h = info - (areaInfo + clicked + h2 * 2) - 5;
+		$('#address_info').css({
+			maxHeight: h + 'px'
+		});
+	});
 });

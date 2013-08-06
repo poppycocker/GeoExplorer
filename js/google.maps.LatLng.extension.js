@@ -18,6 +18,7 @@ google.maps.LatLng.prototype.get2MeshCode = function() {
 	var m2str = strlat_m1 + strlng_m1 + lat_m2 % 10 + "" + lng_m2 % 10;
 	return m2str;
 };
+
 google.maps.LatLng.prototype.distanceFrom = function(newLatLng) {
 	var radianLat1 = this.lat() * (Math.PI / 180);
 	var radianLng1 = this.lng() * (Math.PI / 180);
@@ -29,9 +30,17 @@ google.maps.LatLng.prototype.distanceFrom = function(newLatLng) {
 	var a = Math.pow(sinLat, 2.0) + Math.cos(radianLat1) * Math.cos(radianLat2) * Math.pow(sinLng, 2.0);
 	return earth_radius * 2 * Math.asin(Math.min(1, Math.sqrt(a)));
 };
+
 google.maps.LatLng.prototype.getLatLonStr = function() {
 	var lat = this.lat();
-	var lng = this.lng();
+	var lng = (function f(v) {
+		var d = (v > 0) ? -1 : 1;
+		while (Math.abs(v) > 180) {
+			v += 360 * d;
+		}
+		return v;
+	})(this.lng());
+
 	var nsstr = "N";
 	if (lat < 0) {
 		nsstr = "S";
