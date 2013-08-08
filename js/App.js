@@ -87,13 +87,14 @@ $(function() {
 				$('#informations').slideToggle('fast');
 			}, opts);
 			shortcut.add("Ctrl+Q", function() {
-				$('#input_address').focus();
+				$('#input_address').focus().select();
 			}, opts);
 		},
 		onSearch: function(key, callback) {
 			var coord = this.getLatLngFromString(key);
 			if (coord.OK) {
 				key = new google.maps.LatLng(coord.lat, coord.lng);
+				this.setCenter(key);
 			}
 
 			var self = this;

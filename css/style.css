@@ -57,9 +57,9 @@ li {
 
 #input_address {
 	position: fixed;
-	left: 40%;
+	left: 35%;
 	top: 2.5%;
-	width: 20%;
+	width: 30%;
 	height: 1.1em;
 	font-size: 1.5em;
 	z-index: 65536;
@@ -85,5 +85,4 @@ li {
 
 #address_info {
 	overflow-y: scroll;
-	/*max-height: 60%;*/
 }
