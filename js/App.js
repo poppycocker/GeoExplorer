@@ -1,57 +1,117 @@
 $(function() {
 
+	var lastStateKey = 'lastState_GeoExplorer';
+	var bookmarkKey = 'bookmarks_GeoExplorer';
+
 	var AppView = Backbone.View.extend({
 		el: '#wrapper',
 		events: {
-			'click #btn_address': 'onSearch',
-			'keypress #input_address': 'onEnter'
+			'keypress #input_address': 'onSearch',
+			'click #btn_bookmark': 'toggleBookmark',
+			'keypress #input_bookmark': 'onAddBookmark'
 		},
 		initialize: function() {
 			this.mapView = new MapView({});
 			this.infoView = new InfoView({});
+			this.bookmarkView = new BookmarkView({
+				collection: new BookmarkCollection()
+			});
 
-			_.bindAll(this, 'setClickListener', 'setBoundsChangeListener');
+			// elements
+			this.$inputBookmark = $('#input_bookmark');
+			this.$informations = $('#informations');
+			this.$inputAddress = $('#input_address');
+			this.$bookmark = $('#bookmark');
+
+			_.bindAll(this, 'setClickListener', 'setBoundsChangeListener', 'setShortcutKeys');
 			this.setClickListener();
 			this.setBoundsChangeListener();
+			this.setShortcutKeys();
 		},
 		setClickListener: function() {
-			var self = this;
-			google.maps.event.addListener(self.mapView.map, 'click', function(me) {
-				// マップにマーカーを出す
-				self.mapView.createMarker(me.latLng);
-				// geocoding
-				self.mapView.geocode(me.latLng, function(results) {
-					self.infoView.setGeocodeResult(results);
-				});
-			});
+			var map = this.mapView.map;
+			google.maps.event.addListener(map, 'click', _.bind(function(me) {
+				this.jump(me.latLng);
+			}, this));
 		},
 		setBoundsChangeListener: function() {
-			var self = this;
-			google.maps.event.addListener(self.mapView.map, 'bounds_changed', function() {
-				// AreaInfoを書き換える
-				self.infoView.refreshBounds(self.mapView.map);
-			});
+			var map = this.mapView.map;
+			google.maps.event.addListener(map, 'bounds_changed', _.bind(function() {
+				this.infoView.refreshBounds(map);
+				// Save current state to localStorage
+				var center = map.getCenter();
+				window.localStorageWrapper.data(lastStateKey, {
+					lat: center.lat(),
+					lng: center.lng(),
+					zoom: map.getZoom()
+				});
+			}, this));
 		},
-		onEnter: function(e) {
+		setShortcutKeys: function() {
+			// short-cut key settings 
+			var opts = {
+				'type': 'keydown',
+				'propagate': true,
+				'target': document
+			}, map = this.mapView.map;
+
+			shortcut.add("Shift+PageUp", function() {
+				map.setZoom(map.getZoom() + 1);
+			}, opts);
+			shortcut.add("Shift+PageDown", function() {
+				map.setZoom(map.getZoom() - 1);
+			}, opts);
+
+			shortcut.add("Ctrl+Enter", _.bind(function() {
+				this.$informations.slideToggle('fast');
+			}, this), opts);
+			shortcut.add("Ctrl+Q", _.bind(function() {
+				this.$inputAddress.focus().select();
+			}, this), opts);
+		},
+		toggleBookmark: function() {
+			var str = this.$inputAddress.val();
+			if (str !== '') {
+				this.$inputBookmark.val(str);
+			}
+			this.$bookmark.slideToggle('fast', _.bind(function() {
+				this.$inputBookmark.focus().select();
+			}, this));
+
+		},
+		onSearch: function(e) {
 			if (e.keyCode === 13) {
-				this.onSearch();
+				this.mapView.onSearch($('#input_address').val(), _.bind(function(results) {
+					this.infoView.setGeocodeResult(results);
+				}, this));
 			}
 		},
-		onSearch: function() {
-			var self = this;
-			this.mapView.onSearch($('#input_address').val(), function(results) {
-				self.infoView.setGeocodeResult(results);
-			});
+		onAddBookmark: function(e) {
+			if (e.keyCode === 13) {
+				this.bookmarkView.add(this.$inputBookmark.val(), this.mapView.map.getCenter());
+				this.$inputBookmark.val('');
+			}
+		},
+		jump: function(latLng, centering) {
+			if (centering) {
+				this.mapView.setCenter(latLng);
+			}
+			this.mapView.createMarker(latLng);
+			this.mapView.geocode(latLng, _.bind(function(results) {
+				this.infoView.setGeocodeResult(results);
+			}, this));
+			this.$bookmark.hide();
 		}
 	});
 
 	var MapView = Backbone.View.extend({
 		el: '#map_canvas',
 		initialize: function() {
-			// map生成
-			var latlng = new google.maps.LatLng(35.5291699, 139.6958934);
+			// Generate the Map, get last state from localStorage
+			var lastState = window.localStorageWrapper.data(lastStateKey);
+			var latlng = new google.maps.LatLng(lastState.lat || 35.5291699, lastState.lng || 139.6958934);
 			var options = {
-				zoom: 9,
+				zoom: lastState.zoom || 9,
 				center: latlng,
 				mapTypeControl: true,
 				mapTypeControlOptions: {
@@ -68,27 +128,6 @@ $(function() {
 			this.map = new google.maps.Map(document.getElementById('map_canvas'), options);
 			this.geocoder = new google.maps.Geocoder();
 			this.posMarker = null;
-
-			// short-cut key settings 
-			var opts = {
-				'type': 'keydown',
-				'propagate': true,
-				'target': document
-			};
-			var map = this.map;
-			shortcut.add("Shift+PageUp", function() {
-				map.setZoom(map.getZoom() + 1);
-			}, opts);
-			shortcut.add("Shift+PageDown", function() {
-				map.setZoom(map.getZoom() - 1);
-			}, opts);
-
-			shortcut.add("Ctrl+Enter", function() {
-				$('#informations').slideToggle('fast');
-			}, opts);
-			shortcut.add("Ctrl+Q", function() {
-				$('#input_address').focus().select();
-			}, opts);
 		},
 		onSearch: function(key, callback) {
 			var coord = this.getLatLngFromString(key);
@@ -97,18 +136,17 @@ $(function() {
 				this.setCenter(key);
 			}
 
-			var self = this;
-			this.geocode(key, function(results) {
+			this.geocode(key, _.bind(function(results) {
 				var latLng;
 				if (results[0] && results[0].geometry) {
 					latLng = results[0].geometry.location;
 				}
 				if (latLng) {
-					self.createMarker(latLng);
-					self.setCenter(latLng);
+					this.createMarker(latLng);
+					this.setCenter(latLng);
 				}
 				callback(results);
-			});
+			}, this));
 		},
 		getLatLngFromString: function(latlng) {
 			var translated = latlng.replace('北緯', 'N').replace('南緯', 'S').replace('西経', 'W').replace('東経', 'E').trim();
@@ -203,20 +241,11 @@ $(function() {
 					lng: latLng.lng()
 				});
 			}
-			// loop results
-			this.addressResultsView.collection.reset();
+			// clear all
+			this.addressResultsView.clear();
+			// add results
 			_.each(results, function(result) {
-				var model = new AddressModel({
-					address: result.formatted_address,
-					types: result.types.join(', '),
-					addressCompos: result.address_components.map(function(compo) {
-						return {
-							types: compo.types.join(', '),
-							longName: compo.long_name
-						};
-					})
-				});
-				this.addressResultsView.collection.add(model);
+				this.addressResultsView.add(result);
 			}, this);
 
 		}
@@ -271,9 +300,8 @@ $(function() {
 	var AddressResultsView = Backbone.View.extend({
 		el: '#address_info',
 		initialize: function() {
-			_.bindAll(this, 'render', 'clear');
+			_.bindAll(this, 'render', 'add', 'clear');
 			this.collection.bind('add', this.render);
-			this.collection.bind('reset', this.clear);
 		},
 		render: function(model) {
 			var view = new AddressUnitView({
@@ -282,8 +310,24 @@ $(function() {
 			this.$el.append(view.render().$el);
 			return this;
 		},
+		add: function(data) {
+			var model = new AddressModel({
+				address: data.formatted_address,
+				types: data.types.join(', '),
+				addressCompos: data.address_components.map(function(compo) {
+					return {
+						types: compo.types.join(', '),
+						longName: compo.long_name
+					};
+				})
+			});
+			this.collection.add(model);
+		},
 		clear: function() {
-			this.$el.html('');
+			var model;
+			while (model = this.collection.first()) {
+				model.destroy();
+			}
 		}
 	});
 	var AddressUnitView = Backbone.View.extend({
@@ -294,7 +338,7 @@ $(function() {
 			this.model.bind('destroy', this.remove);
 		},
 		render: function() {
-			this.$el.append(this.template(this.model.attributes));
+			this.$el.html(this.template(this.model.attributes));
 			return this;
 		}
 	});
@@ -310,7 +354,80 @@ $(function() {
 	var AddressCollection = Backbone.Collection.extend({});
 
 
-	// finally, kick AppView to start the application.
+	var BookmarkView = Backbone.View.extend({
+		el: '#bookmark ul',
+		initialize: function() {
+			_.bindAll(this, 'load', 'add', 'delete', 'save', 'render');
+			this.collection.bind('add', this.render);
+			this.collection.bind('remove', this.render);
+			this.load();
+		},
+		load: function() {
+			var bookMarks = window.localStorageWrapper.data(bookmarkKey);
+			if (bookMarks instanceof Array) {
+				_.each(bookMarks, function(bookmark) {
+					this.collection.add(bookmark);
+				}, this);
+			}
+		},
+		add: function(locationName, latLng) {
+			this.collection.add({
+				locationName: locationName,
+				lat: latLng.lat(),
+				lng: latLng.lng()
+			});
+			this.save();
+		},
+		delete: function(bookmark) {
+			this.collection.remove(bookmark);
+			this.save();
+		},
+		save: function() {
+			var data = [];
+			this.collection.each(function(model) {
+				data.push(model.attributes);
+			}, this);
+			window.localStorageWrapper.data(bookmarkKey, data);
+		},
+		render: function(model) {
+			var view = new BookmarkUnitView({
+				model: model
+			});
+			this.$el.append(view.render().$el);
+			return this;
+		}
+	});
+	var BookmarkUnitView = Backbone.View.extend({
+		tagName: 'li',
+		events: {
+			'click': 'onClick'
+		},
+		initialize: function() {
+			_.bindAll(this, 'render', 'remove');
+			this.template = _.template($('#tmpl_bookmark_unit').html());
+			this.model.bind('destroy', this.remove);
+		},
+		render: function() {
+			this.$el.html(this.template(this.model.attributes));
+			return this;
+		},
+		onClick: function() {
+			appView.jump(new google.maps.LatLng(this.model.get('lat'), this.model.get('lng')), true);
+		}
+	});
+	var BookmarkModel = Backbone.Model.extend({
+		defaults: function() {
+			return {
+				locationName: '',
+				lat: 0,
+				lng: 0
+			};
+		}
+	});
+	var BookmarkCollection = Backbone.Collection.extend({});
+
+
+	// finally, create AppView to start the application.
 	window.appView = new AppView();
 
 

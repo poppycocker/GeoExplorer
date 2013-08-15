@@ -5,21 +5,36 @@
 	<title>Geo-Explorer</title>
 	<link rel="stylesheet" href="css/reset.css" media="all">
 	<link rel="stylesheet" href="css/style.css" media="all">
+	<link rel="stylesheet" href="font/typicons.css" media="all">
 	<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
 	<script src="http://maps.google.com/maps/api/js?sensor=false&language=en"></script>
 	<script src="http://underscorejs.org/underscore-min.js"></script>
 	<script src="http://backbonejs.org/backbone-min.js"></script>
 	<script src="js/google.maps.LatLng.extension.js"></script>
 	<script src="js/shortcut.js"></script>
+	<script src="js/localStorageWrapper.js"></script>
 
 	<script src="js/App.js"></script>
 </head>
 <body>
 	<h1>Geo-Explorer</h1>
-	<div id ="wrapper">
-		<div id ="map_canvas"><!-- google map --></div>
-		<input id ="input_address" type ="textbox" value ="">
-		<div id ="informations">
+	<div id="wrapper">
+		<div id="map_canvas"><!-- google map --></div>
+		<div id="controls" class="clearfix">
+			<div id="search_box">
+				<span class="typcn typcn-zoom icon-search"></span>
+				<input id="input_address" type="textbox" placeholder="Search">
+			</div>
+			<div id="bookmark_box">
+				<span class="typcn typcn-bookmark icon-bookmark" id="btn_bookmark"></span>
+				<div id="bookmark">
+					<span class="typcn typcn-plus icon-plus"></span>
+					<input id="input_bookmark" type="textbox" placeholder ="Add current pos as...">
+					<ul></ul>
+				</div>
+			</div>
+		</div>
+		<div id="informations">
 			<h2>AreaInfo</h2>
 			<div id="area_info">
 			</div>
@@ -27,7 +42,6 @@
 			<div id="clicked_point">
 			</div>
 			<div id="address_info">
-				Click the map to Reverse-Geocode
 			</div>
 		</div>
 	</div>
@@ -35,9 +49,9 @@
 	<script type=text/template id="tmpl_area_info">
 		<p>
 			2MeshCode: <%= meshcode %><br>
-			NorthEast: <%= northeast %>
+			NorthEast: <%= northeast %><br>
 			Center: <%= center %><br>
-			SouthWest: <%= southwest %><br>
+			SouthWest: <%= southwest %>
 		</p>
 	</script>
 
@@ -59,5 +73,7 @@
 			<% }); %>
 		</ul>
 	</script>
+
+	<script type=text/template id="tmpl_bookmark_unit"><%= locationName %></script>
 </body>
 </html>

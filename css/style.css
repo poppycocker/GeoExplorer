@@ -55,16 +55,107 @@ li {
 	width: 100%;
 }
 
-#input_address {
+#controls {
 	position: fixed;
-	left: 35%;
+	left: 30%;
 	top: 2.5%;
-	width: 30%;
+	width: 450px;
 	height: 1.1em;
+	z-index: 65536;	
+}
+
+#search_box {
+	width: 80%;
+	height: 140%;
+	float: left;
+}
+
+.icon-search {
+	position: absolute;
+	left: 0.2em;
+	font-size: 2.3em;
+	color: #666666;
+}
+
+#input_address {
+	width: 80%;
 	font-size: 1.5em;
-	z-index: 65536;
-	background: url(../img/search.png) no-repeat 3% 50% #FFFFFF;
-	padding: 0.2em 0.2em 0.2em 1.8em;
+	padding: 0.2em 0.2em 0.2em 2.1em;
+	height: 100%;
+}
+
+#bookmark_box {
+	width: 20%;
+	height: 140%;
+	float: left;
+}
+
+.icon-bookmark {
+	float: left;
+	font-size: 2.3em;
+	background-color: cornflowerblue;
+	color: white;
+	display: block;
+}
+.icon-bookmark:hover {
+	cursor: pointer;
+	opacity: 0.8;
+}
+
+#bookmark {
+	display: none;
+	width: 40%;
+	height: auto;
+	left: 61%;
+	top: 320%;
+	position: absolute;
+	background-color: white;
+	padding: 2%;
+}
+
+#bookmark:after {
+	content: '';
+	position: absolute;
+	border-bottom: 15px solid white;
+	border-right: 12px solid transparent;
+	border-left: 12px solid transparent;
+	top: -12px;
+	left: 45%;
+}
+
+.icon-plus {
+	position: absolute;
+	left: 0.5em;
+	top: 0.6em;
+	font-size: 1.6em;
+	color: #666666;
+}
+
+#input_bookmark {
+	width: 84%;
+	font-size: 1.2em;
+	line-height: 1.5em;
+	padding: 0.2em 0.2em 0.2em 1.6em;
+	border-top: none;
+	border-right: none;
+	border-left: none;
+	border-bottom: 1px solid #999999;
+	margin-bottom: 0.2em;
+}
+
+#bookmark li {
+	list-style-type: none;
+	font-size: 1.2em;
+	margin: 0.3em 0 0 0;
+	padding: 0 0.5em;
+	background-color: #EEEEEE;
+	width: auto;
+	line-height: 1.5em;
+}
+
+#bookmark li:hover {
+	cursor: pointer;
+	background-color: skyblue;
 }
 
 #area_info, #clicked_point {
@@ -76,8 +167,8 @@ li {
 	right: 0;
 	width: 25%;
 	max-width: 350px;
-	top: 0;
-	height: 100%;
+	top: 6%;
+	height: 91%;
 	padding: 0;
 	background-color: #ffffff;
 	opacity: 0.9;
