@@ -153,6 +153,13 @@ li {
 	line-height: 1.5em;
 }
 
+.icon-delete-bookmark {
+	position: absolute;
+	right: 0.5em;
+	font-size: 1.4em;
+	color: #666666;
+}
+
 #bookmark li:hover {
 	cursor: pointer;
 	background-color: skyblue;

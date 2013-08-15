@@ -46,6 +46,7 @@ $(function() {
 					zoom: map.getZoom()
 				});
 			}, this));
+			this.jump(map.getCenter());
 		},
 		setShortcutKeys: function() {
 			// short-cut key settings 
@@ -68,21 +69,22 @@ $(function() {
 			shortcut.add("Ctrl+Q", _.bind(function() {
 				this.$inputAddress.focus().select();
 			}, this), opts);
+			shortcut.add("Ctrl+B", _.bind(function() {
+				this.toggleBookmark();
+			}, this), opts);
 		},
 		toggleBookmark: function() {
-			var str = this.$inputAddress.val();
-			if (str !== '') {
-				this.$inputBookmark.val(str);
-			}
 			this.$bookmark.slideToggle('fast', _.bind(function() {
 				this.$inputBookmark.focus().select();
 			}, this));
 
 		},
 		onSearch: function(e) {
-			if (e.keyCode === 13) {
-				this.mapView.onSearch($('#input_address').val(), _.bind(function(results) {
+			var str = this.$inputAddress.val();
+			if (e.keyCode === 13 && str !== '') {
+				this.mapView.onSearch(str, _.bind(function(results) {
 					this.infoView.setGeocodeResult(results);
+					this.$inputBookmark.val(str);
 				}, this));
 			}
 		},
@@ -359,7 +361,7 @@ $(function() {
 		initialize: function() {
 			_.bindAll(this, 'load', 'add', 'delete', 'save', 'render');
 			this.collection.bind('add', this.render);
-			this.collection.bind('remove', this.render);
+			this.collection.bind('remove', this.delete);
 			this.load();
 		},
 		load: function() {
@@ -381,6 +383,7 @@ $(function() {
 		delete: function(bookmark) {
 			this.collection.remove(bookmark);
 			this.save();
+			// this.render();
 		},
 		save: function() {
 			var data = [];
@@ -400,7 +403,8 @@ $(function() {
 	var BookmarkUnitView = Backbone.View.extend({
 		tagName: 'li',
 		events: {
-			'click': 'onClick'
+			'click': 'onClick',
+			'click .icon-delete-bookmark': 'onDelete'
 		},
 		initialize: function() {
 			_.bindAll(this, 'render', 'remove');
@@ -412,7 +416,14 @@ $(function() {
 			return this;
 		},
 		onClick: function() {
+			if (this.removeFlg) {
+				return;
+			}
 			appView.jump(new google.maps.LatLng(this.model.get('lat'), this.model.get('lng')), true);
+		},
+		onDelete: function() {
+			this.removeFlg = true;
+			this.model.destroy();
 		}
 	});
 	var BookmarkModel = Backbone.Model.extend({
