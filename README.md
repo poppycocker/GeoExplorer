@@ -1,10 +1,11 @@
 GeoExplorer
 ===========
 
-Reverse-Geocoding tool
+A Reverse-Geocoding tool.
+
 Powered by
-  Google Maps API v3
-  jQuery
-  Backbone.js
-  Underscore.js
-  Typicons
+* Google Maps API v3
+* jQuery
+* Backbone.js
+* Underscore.js
+* Typicons
