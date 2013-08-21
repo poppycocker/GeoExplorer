@@ -367,7 +367,9 @@ $(function() {
 		load: function() {
 			var bookMarks = window.localStorageWrapper.data(bookmarkKey);
 			if (bookMarks instanceof Array) {
-				_.each(bookMarks, function(bookmark) {
+				_.each(bookMarks.sort(function(a, b) {
+					return a.locationName > b.locationName;
+				}), function(bookmark) {
 					this.collection.add(bookmark);
 				}, this);
 			}
@@ -397,13 +399,16 @@ $(function() {
 					model: model
 				}),
 				$bookmark = view.render().$el,
-				$bookmarks = this.$el.children();
+				$bookmarks = this.$el.children(),
+				idx = this.collection.indexOf(model);
 
+			// add at sorted position (same as collection)
 			if ($bookmarks.length < 1) {
 				this.$el.append($bookmark);
+			} else if (idx === 0) {
+				$bookmarks.eq(0).before($bookmark);
 			} else {
-				// add to sorted position (same as collection)
-				$bookmarks.eq(this.collection.indexOf(model) - 1).after($bookmark);
+				$bookmarks.eq(idx - 1).after($bookmark);
 			}
 			return this;
 		}
@@ -443,7 +448,11 @@ $(function() {
 			};
 		}
 	});
-	var BookmarkCollection = Backbone.Collection.extend({});
+	var BookmarkCollection = Backbone.Collection.extend({
+		comparator: function(bookmark) {
+			return bookmark.get('locationName');
+		}
+	});
 
 
 	// finally, create AppView to start the application.
