@@ -73,7 +73,7 @@ li {
 .icon-search {
 	position: absolute;
 	left: 0.2em;
-	font-size: 2.3em;
+	font-size: 2.2em;
 	color: #666666;
 }
 
@@ -153,6 +153,11 @@ li {
 	line-height: 1.5em;
 }
 
+#bookmark li:hover {
+	cursor: pointer;
+	background-color: skyblue;
+}
+
 .icon-delete-bookmark {
 	position: absolute;
 	right: 0.5em;
@@ -160,9 +165,9 @@ li {
 	color: #666666;
 }
 
-#bookmark li:hover {
-	cursor: pointer;
-	background-color: skyblue;
+.icon-delete-bookmark:hover {
+	color: darkred;
+	font-weight: bold;
 }
 
 #area_info, #clicked_point {
