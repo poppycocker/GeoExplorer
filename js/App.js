@@ -394,9 +394,17 @@ $(function() {
 		},
 		render: function(model) {
 			var view = new BookmarkUnitView({
-				model: model
-			});
-			this.$el.append(view.render().$el);
+					model: model
+				}),
+				$bookmark = view.render().$el,
+				$bookmarks = this.$el.children();
+
+			if ($bookmarks.length < 1) {
+				this.$el.append($bookmark);
+			} else {
+				// add to sorted position (same as collection)
+				$bookmarks.eq(this.collection.indexOf(model) - 1).after($bookmark);
+			}
 			return this;
 		}
 	});
