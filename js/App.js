@@ -359,9 +359,9 @@ $(function() {
 	var BookmarkView = Backbone.View.extend({
 		el: '#bookmark ul',
 		initialize: function() {
-			_.bindAll(this, 'load', 'add', 'delete', 'save', 'render');
+			_.bindAll(this, 'load', 'add', 'onDelete', 'save', 'render');
 			this.collection.bind('add', this.render);
-			this.collection.bind('remove', this.delete);
+			this.collection.bind('remove', this.onDelete);
 			this.load();
 		},
 		load: function() {
@@ -382,10 +382,8 @@ $(function() {
 			});
 			this.save();
 		},
-		delete: function(bookmark) {
-			this.collection.remove(bookmark);
+		onDelete: function() {
 			this.save();
-			// this.render();
 		},
 		save: function() {
 			var data = [];
@@ -396,8 +394,8 @@ $(function() {
 		},
 		render: function(model) {
 			var view = new BookmarkUnitView({
-					model: model
-				}),
+				model: model
+			}),
 				$bookmark = view.render().$el,
 				$bookmarks = this.$el.children(),
 				idx = this.collection.indexOf(model);
@@ -410,6 +408,16 @@ $(function() {
 			} else {
 				$bookmarks.eq(idx - 1).after($bookmark);
 			}
+
+			// animate inserted element
+			$bookmark.css({
+				backgroundColor: '#87CEEB'
+			}).animate({
+				backgroundColor: '#EEEEEE'
+			}, function() {
+				$(this).attr('style', '');
+			});
+
 			return this;
 		}
 	});
@@ -436,7 +444,9 @@ $(function() {
 		},
 		onDelete: function() {
 			this.removeFlg = true;
-			this.model.destroy();
+			this.$el.hide('fast', _.bind(function() {
+				this.model.destroy();
+			}, this));
 		}
 	});
 	var BookmarkModel = Backbone.Model.extend({
