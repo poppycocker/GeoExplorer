@@ -111,6 +111,7 @@ li {
 	position: absolute;
 	background-color: white;
 	padding: 2%;
+	overflow-y: scroll;
 }
 
 #bookmark:after {
