@@ -2,13 +2,111 @@ $(function() {
 
 	var lastStateKey = 'lastState_GeoExplorer';
 	var bookmarkKey = 'bookmarks_GeoExplorer';
+	var defaultBookmark = [{
+		"locationName": "Amsterdam",
+		"lat": 52.3702157,
+		"lng": 4.895167899999933
+	}, {
+		"locationName": "Bangkok",
+		"lat": 13.7278956,
+		"lng": 100.52412349999997
+	}, {
+		"locationName": "Brussels",
+		"lat": 50.8503396,
+		"lng": 4.351710300000036
+	}, {
+		"locationName": "Buenos Aires",
+		"lat": -34.6037232,
+		"lng": -58.38159310000003
+	}, {
+		"locationName": "Detroit",
+		"lat": 42.331427,
+		"lng": -83.0457538
+	}, {
+		"locationName": "Honolulu",
+		"lat": 21.3069444,
+		"lng": -157.85833330000003
+	}, {
+		"locationName": "Jakarta",
+		"lat": -6.211544,
+		"lng": 106.84517200000005
+	}, {
+		"locationName": "London",
+		"lat": 51.51121389999999,
+		"lng": -0.11982439999997041
+	}, {
+		"locationName": "Los Angels",
+		"lat": 34.0522342,
+		"lng": -118.2436849
+	}, {
+		"locationName": "Melbourne",
+		"lat": -37.814107,
+		"lng": 144.96327999999994
+	}, {
+		"locationName": "Mexico City",
+		"lat": 19.4326077,
+		"lng": -99.13320799999997
+	}, {
+		"locationName": "Moscow",
+		"lat": 55.755826,
+		"lng": 37.6173
+	}, {
+		"locationName": "Mumbai",
+		"lat": 19.0759837,
+		"lng": 72.87765590000004
+	}, {
+		"locationName": "Munich",
+		"lat": 48.1367203,
+		"lng": 11.576753999999937
+	}, {
+		"locationName": "New Delhi",
+		"lat": 28.635308,
+		"lng": 77.22496000000001
+	}, {
+		"locationName": "New York",
+		"lat": 40.7143528,
+		"lng": -74.0059731
+	}, {
+		"locationName": "Paris",
+		"lat": 48.856614,
+		"lng": 2.3522219000000177
+	}, {
+		"locationName": "Rio de Janeiro",
+		"lat": -22.9035393,
+		"lng": -43.20958689999998
+	}, {
+		"locationName": "Rome",
+		"lat": 41.8929163,
+		"lng": 12.482519899999943
+	}, {
+		"locationName": "Singapore",
+		"lat": 1.352083,
+		"lng": 103.81983600000001
+	}, {
+		"locationName": "Vancouver",
+		"lat": 49.261226,
+		"lng": -123.1139268
+	}, {
+		"locationName": "台北",
+		"lat": 25.04053925219744,
+		"lng": 121.55210973803707
+	}, {
+		"locationName": "東京",
+		"lat": 35.6894875,
+		"lng": 139.69170639999993
+	}, {
+		"locationName": "香港",
+		"lat": 22.396428,
+		"lng": 114.10949700000003
+	}];
 
 	var AppView = Backbone.View.extend({
 		el: '#wrapper',
 		events: {
 			'keypress #input_address': 'onSearch',
 			'click #btn_bookmark': 'toggleBookmark',
-			'keypress #input_bookmark': 'onAddBookmark'
+			'keypress #input_bookmark': 'onAddBookmark',
+			'click #close_info': 'toggleInformation'
 		},
 		initialize: function() {
 			this.mapView = new MapView({});
@@ -66,12 +164,12 @@ $(function() {
 			}, opts);
 
 			shortcut.add("Ctrl+Enter", _.bind(function() {
-				this.$informations.slideToggle('fast');
+				this.toggleInformation();
 			}, this), opts);
 			shortcut.add("Ctrl+Q", _.bind(function() {
 				this.$inputAddress.focus().select();
 			}, this), opts);
-			shortcut.add("Ctrl+B", _.bind(function() {
+			shortcut.add("Ctrl+M", _.bind(function() {
 				this.toggleBookmark();
 			}, this), opts);
 		},
@@ -79,7 +177,9 @@ $(function() {
 			this.$bookmark.slideToggle('fast', _.bind(function() {
 				this.$inputBookmark.focus().select();
 			}, this));
-
+		},
+		toggleInformation: function() {
+			this.$informations.slideToggle('fast');
 		},
 		onSearch: function(e) {
 			var str = this.$inputAddress.val();
@@ -112,7 +212,7 @@ $(function() {
 		el: '#map_canvas',
 		initialize: function() {
 			// Generate the Map, get last state from localStorage
-			var lastState = window.localStorageWrapper.data(lastStateKey);
+			var lastState = window.localStorageWrapper.data(lastStateKey) || {};
 			var latlng = new google.maps.LatLng(lastState.lat || 35.5291699, lastState.lng || 139.6958934);
 			var options = {
 				zoom: lastState.zoom || 9,
@@ -367,7 +467,7 @@ $(function() {
 			this.load();
 		},
 		load: function() {
-			var bookMarks = window.localStorageWrapper.data(bookmarkKey);
+			var bookMarks = window.localStorageWrapper.data(bookmarkKey) || defaultBookmark;
 			if (bookMarks instanceof Array) {
 				_.each(bookMarks.sort(function(a, b) {
 					return a.locationName > b.locationName;
@@ -483,7 +583,7 @@ $(function() {
 			areaInfo = $('#area_info').height() || 80,
 			clicked = $('#clicked_point').height() || 80,
 			h2 = $('#informations h2').outerHeight(),
-			h = info - (areaInfo + clicked + h2 * 2) - 5;
+			h = info - (areaInfo + clicked + h2 * 2) - 15;
 		$('#address_info').css({
 			maxHeight: h + 'px'
 		});

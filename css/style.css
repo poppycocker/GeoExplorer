@@ -190,3 +190,17 @@ li {
 #address_info {
 	overflow-y: scroll;
 }
+
+.hint-info {
+	padding: 0.2em 1em;
+	text-align: right;
+	margin-bottom: -1.5em;
+}
+
+#close_info {
+	text-decoration: underline;
+	color: mediumblue;
+}
+#close_info:hover {
+	cursor: pointer;
+}

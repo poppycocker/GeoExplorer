@@ -3,13 +3,13 @@
 		data: function(key, val) {
 			var ls = window.localStorage, item;
 			if (!ls || !key) {
-				return {};
+				return null;
 			}
 			if (val) {
 				ls.setItem(key, JSON.stringify(val));
 			} else {
 				item = ls.getItem(key);
-				return item ? JSON.parse(item) : {};
+				return item ? JSON.parse(item) : null;
 			}
 		}
 	};
