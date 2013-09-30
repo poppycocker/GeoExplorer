@@ -1,3 +1,8 @@
+Number.prototype.round = function(d) {
+	d = Math.pow(10, d || 1);
+	return Math.round(this * d) / d;
+};
+
 $(function() {
 
 	var lastStateKey = 'lastState_GeoExplorer';
@@ -237,6 +242,7 @@ $(function() {
 			var coord = this.getLatLngFromString(key);
 			if (coord.OK) {
 				key = new google.maps.LatLng(coord.lat, coord.lng);
+				this.createMarker(key);
 				this.setCenter(key);
 			}
 
@@ -245,7 +251,7 @@ $(function() {
 				if (results[0] && results[0].geometry) {
 					latLng = results[0].geometry.location;
 				}
-				if (latLng) {
+				if (latLng && latLng.lat() === coord.lat && latLng.lng() === coord.lng) {
 					this.createMarker(latLng);
 					this.setCenter(latLng);
 				}
@@ -309,11 +315,11 @@ $(function() {
 	var InfoView = Backbone.View.extend({
 		el: '#informations',
 		initialize: function() {
-			this.areaInfoView = new AreaInfoView({
-				model: new AreaInfoModel()
+			this.centerInfoView = new CenterInfoView({
+				model: new PositionModel()
 			});
 			this.clickedPointView = new ClickedPointView({
-				model: new ClickedPointModel()
+				model: new PositionModel()
 			});
 			this.addressResultsView = new AddressResultsView({
 				collection: new AddressCollection()
@@ -321,15 +327,12 @@ $(function() {
 		},
 		refreshBounds: function(map) {
 			var c = map.getCenter();
-			var b = map.getBounds();
-			var sw = b.getSouthWest();
-			var ne = b.getNorthEast();
 
-			this.areaInfoView.model.set({
+			this.centerInfoView.model.set({
 				meshcode: c.get2MeshCode(),
-				center: c.getLatLonStr(),
-				southwest: sw.getLatLonStr(),
-				northeast: ne.getLatLonStr()
+				latLngStr: c.getLatLonStr(),
+				lat: c.lat().round(6),
+				lng: c.lng().round(6)
 			});
 		},
 		setGeocodeResult: function(results) {
@@ -340,9 +343,9 @@ $(function() {
 			if (latLng) {
 				this.clickedPointView.model.set({
 					meshcode: latLng.get2MeshCode(),
-					clicked: latLng.getLatLonStr(),
-					lat: latLng.lat(),
-					lng: latLng.lng()
+					latLngStr: latLng.getLatLonStr(),
+					lat: latLng.lat().round(6),
+					lng: latLng.lng().round(6)
 				});
 			}
 			// clear all
@@ -355,25 +358,25 @@ $(function() {
 		}
 	});
 
-	var AreaInfoView = Backbone.View.extend({
-		el: '#area_info',
+	var CenterInfoView = Backbone.View.extend({
+		el: '#center_info',
 		initialize: function() {
 			_.bindAll(this, 'render');
 			this.model.bind('change', this.render);
-			this.template = _.template($('#tmpl_area_info').html());
+			this.template = _.template($('#tmpl_center_info').html());
 		},
 		render: function() {
 			this.$el.html(this.template(this.model.attributes));
 			return this;
 		}
 	});
-	var AreaInfoModel = Backbone.Model.extend({
+	var PositionModel = Backbone.Model.extend({
 		defaults: function() {
 			return {
 				meshcode: '',
-				center: '',
-				southwest: '',
-				northeast: ''
+				latLngStr: '',
+				lat: 0,
+				lng: 0
 			};
 		}
 	});
@@ -388,16 +391,6 @@ $(function() {
 		render: function() {
 			this.$el.html(this.template(this.model.attributes));
 			return this;
-		}
-	});
-	var ClickedPointModel = Backbone.Model.extend({
-		defaults: function() {
-			return {
-				meshcode: '',
-				clicked: '',
-				lat: '',
-				lng: ''
-			};
 		}
 	});
 
@@ -580,10 +573,10 @@ $(function() {
 			height: $(window).height() + 'px'
 		});
 		var info = $('#informations').height(),
-			areaInfo = $('#area_info').height() || 80,
+			centerInfo = $('#center_info').height() || 80,
 			clicked = $('#clicked_point').height() || 80,
 			h2 = $('#informations h2').outerHeight(),
-			h = info - (areaInfo + clicked + h2 * 2) - 15;
+			h = info - (centerInfo + clicked + h2 * 2) - 15;
 		$('#address_info').css({
 			maxHeight: h + 'px'
 		});
