@@ -251,7 +251,7 @@ $(function() {
 				if (results[0] && results[0].geometry) {
 					latLng = results[0].geometry.location;
 				}
-				if (latLng && latLng.lat() === coord.lat && latLng.lng() === coord.lng) {
+				if (!coord.OK && latLng) {
 					this.createMarker(latLng);
 					this.setCenter(latLng);
 				}
