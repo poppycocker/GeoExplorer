@@ -9,100 +9,100 @@ $(function() {
 	var bookmarkKey = 'bookmarks_GeoExplorer';
 	var defaultBookmark = [{
 		"locationName": "Amsterdam",
-		"lat": 52.3702157,
-		"lng": 4.895167899999933
+		"lat": 52.370216,
+		"lng": 4.895168
 	}, {
 		"locationName": "Bangkok",
-		"lat": 13.7278956,
-		"lng": 100.52412349999997
+		"lat": 13.727896,
+		"lng": 100.524123
 	}, {
 		"locationName": "Brussels",
-		"lat": 50.8503396,
-		"lng": 4.351710300000036
+		"lat": 50.85034,
+		"lng": 4.35171
 	}, {
 		"locationName": "Buenos Aires",
-		"lat": -34.6037232,
-		"lng": -58.38159310000003
+		"lat": -34.603723,
+		"lng": -58.381593
 	}, {
 		"locationName": "Detroit",
 		"lat": 42.331427,
-		"lng": -83.0457538
+		"lng": -83.045754
 	}, {
 		"locationName": "Honolulu",
-		"lat": 21.3069444,
-		"lng": -157.85833330000003
+		"lat": 21.306944,
+		"lng": -157.858333
 	}, {
 		"locationName": "Jakarta",
 		"lat": -6.211544,
-		"lng": 106.84517200000005
+		"lng": 106.845172
 	}, {
 		"locationName": "London",
-		"lat": 51.51121389999999,
-		"lng": -0.11982439999997041
+		"lat": 51.511214,
+		"lng": -0.119824
 	}, {
 		"locationName": "Los Angels",
-		"lat": 34.0522342,
-		"lng": -118.2436849
+		"lat": 34.052234,
+		"lng": -118.243685
 	}, {
 		"locationName": "Melbourne",
 		"lat": -37.814107,
-		"lng": 144.96327999999994
+		"lng": 144.96328
 	}, {
 		"locationName": "Mexico City",
-		"lat": 19.4326077,
-		"lng": -99.13320799999997
+		"lat": 19.432608,
+		"lng": -99.133208
 	}, {
 		"locationName": "Moscow",
 		"lat": 55.755826,
 		"lng": 37.6173
 	}, {
 		"locationName": "Mumbai",
-		"lat": 19.0759837,
-		"lng": 72.87765590000004
+		"lat": 19.075984,
+		"lng": 72.877656
 	}, {
 		"locationName": "Munich",
-		"lat": 48.1367203,
-		"lng": 11.576753999999937
+		"lat": 48.13672,
+		"lng": 11.576754
 	}, {
 		"locationName": "New Delhi",
 		"lat": 28.635308,
-		"lng": 77.22496000000001
+		"lng": 77.22496
 	}, {
 		"locationName": "New York",
-		"lat": 40.7143528,
-		"lng": -74.0059731
+		"lat": 40.714353,
+		"lng": -74.005973
 	}, {
 		"locationName": "Paris",
 		"lat": 48.856614,
-		"lng": 2.3522219000000177
+		"lng": 2.352222
 	}, {
 		"locationName": "Rio de Janeiro",
-		"lat": -22.9035393,
-		"lng": -43.20958689999998
+		"lat": -22.903539,
+		"lng": -43.209587
 	}, {
 		"locationName": "Rome",
-		"lat": 41.8929163,
-		"lng": 12.482519899999943
+		"lat": 41.892916,
+		"lng": 12.48252
 	}, {
 		"locationName": "Singapore",
 		"lat": 1.352083,
-		"lng": 103.81983600000001
+		"lng": 103.819836
 	}, {
 		"locationName": "Vancouver",
 		"lat": 49.261226,
-		"lng": -123.1139268
+		"lng": -123.113927
 	}, {
 		"locationName": "台北",
-		"lat": 25.04053925219744,
-		"lng": 121.55210973803707
+		"lat": 25.040539,
+		"lng": 121.55211
 	}, {
 		"locationName": "東京",
-		"lat": 35.6894875,
-		"lng": 139.69170639999993
+		"lat": 35.689488,
+		"lng": 139.691706
 	}, {
 		"locationName": "香港",
 		"lat": 22.396428,
-		"lng": 114.10949700000003
+		"lng": 114.109497
 	}];
 
 	var AppView = Backbone.View.extend({
@@ -110,7 +110,6 @@ $(function() {
 		events: {
 			'keypress #input_address': 'onSearch',
 			'click #btn_bookmark': 'toggleBookmark',
-			'keypress #input_bookmark': 'onAddBookmark',
 			'click #close_info': 'toggleInformation'
 		},
 		initialize: function() {
@@ -121,10 +120,7 @@ $(function() {
 			});
 
 			// elements
-			this.$inputBookmark = $('#input_bookmark');
-			this.$informations = $('#informations');
 			this.$inputAddress = $('#input_address');
-			this.$bookmark = $('#bookmark');
 
 			_.bindAll(this, 'setClickListener', 'setBoundsChangeListener', 'setShortcutKeys');
 			this.setClickListener();
@@ -179,26 +175,18 @@ $(function() {
 			}, this), opts);
 		},
 		toggleBookmark: function() {
-			this.$bookmark.slideToggle('fast', _.bind(function() {
-				this.$inputBookmark.focus().select();
-			}, this));
+			this.bookmarkView.toggle();
 		},
 		toggleInformation: function() {
-			this.$informations.slideToggle('fast');
+			this.infoView.toggle();
 		},
 		onSearch: function(e) {
 			var str = this.$inputAddress.val();
 			if (e.keyCode === 13 && str !== '') {
 				this.mapView.onSearch(str, _.bind(function(results) {
 					this.infoView.setGeocodeResult(results);
-					this.$inputBookmark.val(str);
+					this.bookmarkView.setSearchKey(str);
 				}, this));
-			}
-		},
-		onAddBookmark: function(e) {
-			if (e.keyCode === 13) {
-				this.bookmarkView.add(this.$inputBookmark.val(), this.mapView.map.getCenter());
-				this.$inputBookmark.val('');
 			}
 		},
 		jump: function(latLng, centering) {
@@ -209,7 +197,7 @@ $(function() {
 			this.mapView.geocode(latLng, _.bind(function(results) {
 				this.infoView.setGeocodeResult(results);
 			}, this));
-			this.$bookmark.hide();
+			this.bookmarkView.hide();
 		}
 	});
 
@@ -354,7 +342,9 @@ $(function() {
 			_.each(results, function(result) {
 				this.addressResultsView.add(result);
 			}, this);
-
+		},
+		toggle: function() {
+			this.$el.slideToggle('fast');
 		}
 	});
 
@@ -452,8 +442,14 @@ $(function() {
 
 
 	var BookmarkView = Backbone.View.extend({
-		el: '#bookmark ul',
+		el: '#bookmark',
+		events: {
+			'keypress #input_bookmark': 'onEnter',
+			'click .icon-plus': 'add',
+		},
 		initialize: function() {
+			this.$ul = this.$el.find('ul');
+			this.$input = this.$el.find('input');
 			_.bindAll(this, 'load', 'add', 'onDelete', 'save', 'render');
 			this.collection.bind('add', this.render);
 			this.collection.bind('remove', this.onDelete);
@@ -469,13 +465,20 @@ $(function() {
 				}, this);
 			}
 		},
-		add: function(locationName, latLng) {
+		onEnter: function(e) {
+			if (e.keyCode === 13) {
+				this.add();
+			}
+		},
+		add: function() {
+			var latLng = appView.mapView.map.getCenter();
 			this.collection.add({
-				locationName: locationName,
+				locationName: this.$input.val(),
 				lat: latLng.lat(),
 				lng: latLng.lng()
 			});
 			this.save();
+			this.$input.val('');
 		},
 		onDelete: function() {
 			this.save();
@@ -492,12 +495,12 @@ $(function() {
 				model: model
 			}),
 				$bookmark = view.render().$el,
-				$bookmarks = this.$el.children(),
+				$bookmarks = this.$ul.children(),
 				idx = this.collection.indexOf(model);
 
 			// add at sorted position (same as collection)
 			if ($bookmarks.length < 1) {
-				this.$el.append($bookmark);
+				this.$ul.append($bookmark);
 			} else if (idx === 0) {
 				$bookmarks.eq(0).before($bookmark);
 			} else {
@@ -514,6 +517,20 @@ $(function() {
 			});
 
 			return this;
+		},
+		setSearchKey: function(str) {
+			this.$input.val(str);
+		},
+		focusInput: function() {
+			this.$input.focus().select();
+		},
+		toggle: function() {
+			this.$el.slideToggle('fast', _.bind(function() {
+				this.focusInput();
+			}, this));
+		},
+		hide: function() {
+			this.$el.hide();
 		}
 	});
 	var BookmarkUnitView = Backbone.View.extend({
@@ -555,7 +572,7 @@ $(function() {
 	});
 	var BookmarkCollection = Backbone.Collection.extend({
 		comparator: function(bookmark) {
-			return bookmark.get('locationName');
+			return bookmark.get('locationName').toUpperCase();
 		}
 	});
 

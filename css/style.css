@@ -131,6 +131,13 @@ li {
 	font-size: 1.6em;
 	color: #666666;
 }
+.icon-plus:hover {
+	cursor: pointer;
+	color: skyblue;
+}
+.icon-plus:active {
+	top: 0.65em;
+}
 
 #input_bookmark {
 	width: 84%;
@@ -165,9 +172,10 @@ li {
 	font-size: 1.4em;
 	color: #666666;
 }
-
 .icon-delete-bookmark:hover {
 	color: darkred;
+}
+.icon-delete-bookmark:active {
 	font-weight: bold;
 }
 
