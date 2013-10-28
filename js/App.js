@@ -108,7 +108,7 @@ $(function() {
 	var AppView = Backbone.View.extend({
 		el: '#wrapper',
 		events: {
-			'keypress #input_address': 'onSearch',
+			'keyup #input_address': 'onSearch',
 			'click #btn_bookmark': 'toggleBookmark',
 			'click #close_info': 'toggleInformation'
 		},
@@ -444,8 +444,8 @@ $(function() {
 	var BookmarkView = Backbone.View.extend({
 		el: '#bookmark',
 		events: {
-			'keypress #input_bookmark': 'onEnter',
-			'click .icon-plus': 'add',
+			'keyup #input_bookmark': 'onKeyUp',
+			'click .icon-plus': 'add'
 		},
 		initialize: function() {
 			this.$ul = this.$el.find('ul');
@@ -454,6 +454,7 @@ $(function() {
 			this.collection.bind('add', this.render);
 			this.collection.bind('remove', this.onDelete);
 			this.load();
+			this.idx = 0;
 		},
 		load: function() {
 			var bookMarks = window.localStorageWrapper.data(bookmarkKey) || defaultBookmark;
@@ -465,15 +466,59 @@ $(function() {
 				}, this);
 			}
 		},
-		onEnter: function(e) {
+		onKeyUp: function(e) {
 			if (e.keyCode === 13) {
+				this.onEnter(e);
+			} else if (e.keyCode === 38 || e.keyCode === 40) {
+				this.onUpDown(e);
+			}
+		},
+		onEnter: function(e) {
+			if (this.$el.find('.bkm_li_hover').length !== 0) {
+				this.collection.each(function(model) {
+					model.trigger('deselect:byKey');
+				});
+				this.collection.at(this.idx).trigger('jump:byKey');
+			} else {
 				this.add();
+			}
+		},
+		onUpDown: function(e) {
+			if(this.$el.find('li').length === 0) {
+				return;
+			}
+			this.adjustIdx();
+			if(this.$el.find('.bkm_li_hover').length === 0) {
+				this.collection.at(this.idx).trigger('select:byKey');
+				return;
+			}
+			if (e.keyCode === 38) {	// Up
+				this.idx--;
+			} else {	// Down
+				this.idx++;
+			}
+			this.adjustIdx();
+			this.collection.each(function(model) {
+				model.trigger('deselect:byKey');
+			});
+			this.collection.at(this.idx).trigger('select:byKey');
+		},
+		adjustIdx: function() {
+			if (this.idx < 0) {
+				this.idx = 0;
+			}
+			if (this.idx >= this.collection.length) {
+				this.idx = this.collection.length - 1;
 			}
 		},
 		add: function() {
 			var latLng = appView.mapView.map.getCenter();
+			var val = this.$input.val();
+			if (val === '') {
+				return;
+			}
 			this.collection.add({
-				locationName: this.$input.val(),
+				locationName: val,
 				lat: latLng.lat(),
 				lng: latLng.lng()
 			});
@@ -540,9 +585,12 @@ $(function() {
 			'click .icon-delete-bookmark': 'onDelete'
 		},
 		initialize: function() {
-			_.bindAll(this, 'render', 'remove');
+			_.bindAll(this, 'render', 'remove', 'onClick', 'onSelect', 'onDeselect');
 			this.template = _.template($('#tmpl_bookmark_unit').html());
 			this.model.bind('destroy', this.remove);
+			this.model.bind('select:byKey', this.onSelect);
+			this.model.bind('deselect:byKey', this.onDeselect);
+			this.model.bind('jump:byKey', this.onClick);
 		},
 		render: function() {
 			this.$el.html(this.template(this.model.attributes));
@@ -553,6 +601,12 @@ $(function() {
 				return;
 			}
 			appView.jump(new google.maps.LatLng(this.model.get('lat'), this.model.get('lng')), true);
+		},
+		onSelect: function() {
+			this.$el.addClass('bkm_li_hover');
+		},
+		onDeselect: function() {
+			this.$el.removeClass('bkm_li_hover');
 		},
 		onDelete: function() {
 			this.removeFlg = true;

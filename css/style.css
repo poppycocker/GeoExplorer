@@ -160,10 +160,12 @@ li {
 	width: auto;
 	line-height: 1.5em;
 }
-
 #bookmark li:hover {
 	cursor: pointer;
 	background-color: skyblue;
+}
+.bkm_li_hover {
+	background-color: skyblue !important;
 }
 
 .icon-delete-bookmark {
