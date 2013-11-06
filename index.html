@@ -38,13 +38,10 @@
 		<div id="informations">
 			<p class="hint-info">Ctrl+Enter to open/<span id="close_info">close</span></p>
 			<h2>Map Center</h2>
-			<div id="center_info">
-			</div>
-			<h2>Clicked Point</h2>
-			<div id="clicked_point">
-			</div>
-			<div id="address_info">
-			</div>
+			<div id="center_info"></div>
+			<h2>Marked Point</h2>
+			<div id="clicked_point"></div>
+			<div id="address_info"></div>
 		</div>
 	</div>
 
@@ -59,7 +56,7 @@
 	<script type=text/template id="tmpl_clicked_point">
 		<p>
 			2MeshCode: <%= meshcode %><br>
-			<%= latLngStr %><br>
+			<b><%= latLngStr %></b><br>
 			<%= lat %>, <%= lng %>
 		</p>
 	</script>
