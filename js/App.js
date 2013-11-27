@@ -324,7 +324,8 @@ $(function() {
 				meshcode: c.get2MeshCode(),
 				latLngStr: c.getLatLonStr(),
 				lat: c.lat().round(6),
-				lng: c.lng().round(6)
+				lng: c.lng().round(6),
+				zoom: map.getZoom()
 			});
 		},
 		setGeocodeResult: function(results) {
@@ -370,7 +371,8 @@ $(function() {
 				meshcode: '',
 				latLngStr: '',
 				lat: 0,
-				lng: 0
+				lng: 0,
+				zoom: 18
 			};
 		}
 	});
