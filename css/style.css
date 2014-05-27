@@ -205,10 +205,10 @@ a {
 	overflow-y: scroll;
 }
 
-#close_info {
-	text-decoration: underline;
-	color: mediumblue;
-}
-#close_info:hover {
-	cursor: pointer;
+.llstring {
+	font-weight: bold;
+	width: 90%;
+	border: none;
+	background-color: inherit;
+	padding: 1px 0;
 }

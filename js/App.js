@@ -110,7 +110,6 @@ $(function() {
 		events: {
 			'keyup #input_address': 'onSearch',
 			'click #btn_bookmark': 'toggleBookmark',
-			'click #close_info': 'toggleInformation'
 		},
 		initialize: function() {
 			this.mapView = new MapView({});
@@ -327,6 +326,9 @@ $(function() {
 				lng: c.lng().round(6),
 				zoom: map.getZoom()
 			});
+			this.clickedPointView.model.set({
+				zoom: map.getZoom()
+			});
 		},
 		setGeocodeResult: function(results) {
 			var latLng;
@@ -358,10 +360,13 @@ $(function() {
 		initialize: function() {
 			_.bindAll(this, 'render');
 			this.model.bind('change', this.render);
-			this.template = _.template($('#tmpl_center_info').html());
+			this.template = _.template($('#tmpl_point_info').html());
 		},
 		render: function() {
 			this.$el.html(this.template(this.model.attributes));
+			$('.llstring').click(function() {
+				$(this).select();
+			});
 			return this;
 		}
 	});
@@ -382,10 +387,13 @@ $(function() {
 		initialize: function() {
 			_.bindAll(this, 'render');
 			this.model.bind('change', this.render);
-			this.template = _.template($('#tmpl_clicked_point').html());
+			this.template = _.template($('#tmpl_point_info').html());
 		},
 		render: function() {
 			this.$el.html(this.template(this.model.attributes));
+			$('.llstring').click(function() {
+				$(this).select();
+			});
 			return this;
 		}
 	});
