@@ -110,7 +110,6 @@ $(function() {
 		events: {
 			'keyup #input_address': 'onSearch',
 			'click #btn_bookmark': 'toggleBookmark',
-			'click #close_info': 'toggleInformation'
 		},
 		initialize: function() {
 			this.mapView = new MapView({});
@@ -327,6 +326,9 @@ $(function() {
 				lng: c.lng().round(6),
 				zoom: map.getZoom()
 			});
+			this.clickedPointView.model.set({
+				zoom: map.getZoom()
+			});
 		},
 		setGeocodeResult: function(results) {
 			var latLng;
@@ -362,6 +364,9 @@ $(function() {
 		},
 		render: function() {
 			this.$el.html(this.template(this.model.attributes));
+			$('.llstring').click(function() {
+				$(this).select();
+			});
 			return this;
 		}
 	});
@@ -386,6 +391,9 @@ $(function() {
 		},
 		render: function() {
 			this.$el.html(this.template(this.model.attributes));
+			$('.llstring').click(function() {
+				$(this).select();
+			});
 			return this;
 		}
 	});
