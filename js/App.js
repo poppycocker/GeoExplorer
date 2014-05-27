@@ -358,7 +358,7 @@ $(function() {
 		initialize: function() {
 			_.bindAll(this, 'render');
 			this.model.bind('change', this.render);
-			this.template = _.template($('#tmpl_center_info').html());
+			this.template = _.template($('#tmpl_point_info').html());
 		},
 		render: function() {
 			this.$el.html(this.template(this.model.attributes));
@@ -382,7 +382,7 @@ $(function() {
 		initialize: function() {
 			_.bindAll(this, 'render');
 			this.model.bind('change', this.render);
-			this.template = _.template($('#tmpl_clicked_point').html());
+			this.template = _.template($('#tmpl_point_info').html());
 		},
 		render: function() {
 			this.$el.html(this.template(this.model.attributes));
