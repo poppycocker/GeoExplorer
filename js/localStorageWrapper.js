@@ -11,6 +11,9 @@
 				item = ls.getItem(key);
 				return item ? JSON.parse(item) : null;
 			}
+		},
+		remove: function(key) {
+			window.localStorage.removeItem(key);
 		}
 	};
 }).call(this);
