@@ -484,6 +484,8 @@ $(function() {
 				this.onEnter(e);
 			} else if (e.keyCode === 38 || e.keyCode === 40) {
 				this.onUpDown(e);
+			} else if (e.keyCode === 46) {
+				this.onDelete();
 			}
 		},
 		onEnter: function(e) {
@@ -518,9 +520,14 @@ $(function() {
 			});
 			this.collection.at(this.idx).trigger('select:byKey');
 		},
+		onDelete: function() {
+			if (this.$el.find('.bkm_li_hover').length !== 0) {
+				this.collection.at(this.idx).trigger('delete:byKey');
+			}
+		},
 		adjustIdx: function() {
 			if (this.idx < 0) {
-				this.idx = this.idx = this.collection.length - 1;
+				this.idx = this.collection.length - 1;
 			}
 			else if (this.idx >= this.collection.length) {
 				this.idx = 0;
@@ -598,11 +605,12 @@ $(function() {
 			'click .icon-delete-bookmark': 'onDelete'
 		},
 		initialize: function() {
-			_.bindAll(this, 'render', 'remove', 'onClick', 'onSelect', 'onDeselect');
+			_.bindAll(this, 'render', 'remove', 'onClick', 'onSelect', 'onDeselect', 'onDelete');
 			this.template = _.template($('#tmpl_bookmark_unit').html());
 			this.model.bind('destroy', this.remove);
 			this.model.bind('select:byKey', this.onSelect);
 			this.model.bind('deselect:byKey', this.onDeselect);
+			this.model.bind('delete:byKey', this.onDelete);
 			this.model.bind('jump:byKey', this.onClick);
 		},
 		render: function() {
