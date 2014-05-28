@@ -543,7 +543,10 @@ $(function() {
 			var data = this.collection.map(function(model) {
 				return model.attributes;
 			});
-			window.localStorageWrapper.data(bookmarkKey, data);
+			if (data.length)
+				window.localStorageWrapper.data(bookmarkKey, data);
+			else
+				window.localStorageWrapper.remove(bookmarkKey);
 		},
 		render: function(model) {
 			var view = new BookmarkUnitView({
