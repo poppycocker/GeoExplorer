@@ -145,12 +145,13 @@ $(function() {
 			this.jump(map.getCenter());
 		},
 		setShortcutKeys: function() {
-			// short-cut key settings 
+			// short-cut key settings
 			var opts = {
-				'type': 'keydown',
-				'propagate': true,
-				'target': document
-			}, map = this.mapView.map;
+					'type': 'keydown',
+					'propagate': true,
+					'target': document
+				},
+				map = this.mapView.map;
 
 			shortcut.add('Shift+PageUp', function() {
 				map.setZoom(map.getZoom() + 1);
@@ -288,7 +289,14 @@ $(function() {
 
 			this.geocoder.geocode(q, function(results, status) {
 				if (status !== google.maps.GeocoderStatus.OK) {
-					results = {};
+					results = [];
+					if (q.latLng) {
+						results.push({
+							geometry: {
+								location: q.latLng
+							}
+						});
+					}
 				}
 				callback(results);
 			});
@@ -412,6 +420,8 @@ $(function() {
 			return this;
 		},
 		add: function(data) {
+			if (!data.formatted_address)
+				return;
 			var model = new AddressModel({
 				address: data.formatted_address,
 				types: data.types.join(', '),
@@ -499,11 +509,11 @@ $(function() {
 			}
 		},
 		onUpDown: function(e) {
-			if(this.$el.find('li').length === 0) {
+			if (this.$el.find('li').length === 0) {
 				return;
 			}
 			this.adjustIdx();
-			if(this.$el.find('.bkm_li_hover').length === 0) {
+			if (this.$el.find('.bkm_li_hover').length === 0) {
 				this.collection.at(this.idx).trigger('select:byKey');
 				return;
 			}
@@ -528,8 +538,7 @@ $(function() {
 		adjustIdx: function() {
 			if (this.idx < 0) {
 				this.idx = this.collection.length - 1;
-			}
-			else if (this.idx >= this.collection.length) {
+			} else if (this.idx >= this.collection.length) {
 				this.idx = 0;
 			}
 		},
@@ -557,8 +566,8 @@ $(function() {
 		},
 		render: function(model) {
 			var view = new BookmarkUnitView({
-				model: model
-			}),
+					model: model
+				}),
 				$bookmark = view.render().$el,
 				$bookmarks = this.$ul.children(),
 				idx = this.collection.indexOf(model);
