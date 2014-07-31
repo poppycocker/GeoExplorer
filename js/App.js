@@ -275,6 +275,9 @@ $(function() {
 				map: this.map,
 				position: latLng
 			});
+			this.posMarker.addListener('click', _.bind(function(me) {
+				this.setCenter(me.latLng);
+			}, this));
 		},
 		setCenter: function(latLng) {
 			this.map.setCenter(latLng);
