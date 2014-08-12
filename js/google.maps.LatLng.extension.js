@@ -87,4 +87,16 @@
 		return m2str;
 	};
 
+	var get256s = function(deg) {
+		return Math.round(deg * 3600 * 256);
+	};
+
+	this.prototype.getLat256s = function() {
+		return get256s(this.lat());
+	};
+
+	this.prototype.getLng256s = function() {
+		return get256s(this.lng());
+	};
+
 }).call(google.maps.LatLng);
