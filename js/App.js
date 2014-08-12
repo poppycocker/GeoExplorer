@@ -335,6 +335,8 @@ $(function() {
 				latLngStr: c.getLatLonStr(),
 				lat: c.lat().round(6),
 				lng: c.lng().round(6),
+				lat256s: c.getLat256s(),
+				lng256s: c.getLng256s(),
 				zoom: map.getZoom()
 			});
 			this.clickedPointView.model.set({
@@ -351,7 +353,9 @@ $(function() {
 					meshcode: latLng.get2MeshCode(),
 					latLngStr: latLng.getLatLonStr(),
 					lat: latLng.lat().round(6),
-					lng: latLng.lng().round(6)
+					lng: latLng.lng().round(6),
+					lat256s: latLng.getLat256s(),
+					lng256s: latLng.getLng256s()
 				});
 			}
 			// clear all
@@ -388,6 +392,8 @@ $(function() {
 				latLngStr: '',
 				lat: 0,
 				lng: 0,
+				lat256s: 0,
+				lng256s: 0,
 				zoom: 18
 			};
 		}
