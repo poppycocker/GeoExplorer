@@ -10,19 +10,11 @@ $(function() {
 
 	var AppView = Backbone.View.extend({
 		el: '#wrapper',
-		events: {
-			'keyup #input_address': 'onSearch',
-			'click #btn_bookmark': 'toggleBookmark',
-		},
 		initialize: function() {
 			this.mapView = new MapView({});
+			this.searchView = new SearchView({});
 			this.infoView = new InfoView({});
-			this.bookmarkView = new BookmarkView({
-				collection: new BookmarkCollection()
-			});
-
-			// elements
-			this.$inputAddress = $('#input_address');
+			this.bookmarkView = new BookmarkView({});
 
 			_.bindAll(this, 'setClickListener', 'setBoundsChangeListener');
 			this.setClickListener();
@@ -46,20 +38,8 @@ $(function() {
 			}, this));
 			this.jump(map.getCenter());
 		},
-		toggleBookmark: function() {
-			this.bookmarkView.toggle();
-		},
 		toggleInformation: function() {
 			this.infoView.toggle();
-		},
-		onSearch: function(e) {
-			var str = this.$inputAddress.val();
-			if (e.keyCode === 13 && str !== '') {
-				this.mapView.onSearch(str, _.bind(function(results) {
-					this.infoView.setGeocodeResult(results);
-					this.bookmarkView.setSearchKey(str);
-				}, this));
-			}
 		},
 		jump: function(latLng, centering) {
 			if (centering) {
@@ -194,6 +174,29 @@ $(function() {
 				lng: center.lng(),
 				zoom: this.map.getZoom()
 			});
+		}
+	});
+
+	var SearchView = Backbone.View.extend({
+		el: '#input_address',
+		events: {
+			'keyup': 'onSearch'
+		},
+		initialize: function() {
+			_.bindAll(this, 'onSearch', 'focus');
+			this.$el.val('');
+		},
+		onSearch: function(e) {
+			var str = this.$el.val();
+			if (e.keyCode === 13 && str !== '') {
+				appView.mapView.onSearch(str, function(results) {
+					appView.infoView.setGeocodeResult(results);
+					appView.bookmarkView.setSearchKey(str);
+				});
+			}
+		},
+		focus: function() {
+			this.$el.focus().select();
 		}
 	});
 
@@ -358,6 +361,30 @@ $(function() {
 
 
 	var BookmarkView = Backbone.View.extend({
+		el: '#bookmark_box',
+		events: {
+			'click #btn_bookmark': 'toggleBookmark'
+		},
+		initialize: function() {
+			this.bookmarkListView = new BookmarkListView({
+				collection: new BookmarkCollection()
+			});
+		},
+		toggleBookmark: function() {
+			this.bookmarkListView.toggle();
+		},
+		save: function() {
+			this.bookmarkListView.save();
+		},
+		setSearchKey: function(str) {
+			this.bookmarkListView.setSearchKey(str);
+		},
+		hide: function() {
+			this.bookmarkListView.hide();
+		}
+	});
+
+	var BookmarkListView = Backbone.View.extend({
 		el: '#bookmark',
 		events: {
 			'keydown #input_bookmark': 'onKeyDown',
@@ -575,10 +602,10 @@ $(function() {
 			appView.toggleInformation();
 		}, this), opts);
 		shortcut.add('Ctrl+Q', _.bind(function() {
-			appView.$inputAddress.focus().select();
+			appView.searchView.focus();
 		}, this), opts);
 		shortcut.add('Ctrl+M', _.bind(function() {
-			appView.toggleBookmark();
+			appView.bookmarkView.toggleBookmark();
 		}, this), opts);
 	})();
 
