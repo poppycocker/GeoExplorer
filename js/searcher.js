@@ -11,7 +11,7 @@
 				var coord = this.getLatLngFromString(key);
 				if (coord.OK) {
 					key = new google.maps.LatLng(coord.lat, coord.lng);
-					this.app.updateViews({
+					this.app.render({
 						centerPos: key,
 						markerPos: key
 					});
@@ -23,14 +23,14 @@
 						latLng = results[0].geometry.location;
 					}
 					if (!coord.OK && latLng) {
-						this.app.updateViews({
+						this.app.render({
 							centerPos: latLng,
 							markerPos: latLng
 						});
 					}
-					this.app.updateViews({
+					this.app.render({
 						geocodeResults: results,
-						bookmarkKey: key
+						bookmarkTitle: key
 					});
 				}, this));
 			},
