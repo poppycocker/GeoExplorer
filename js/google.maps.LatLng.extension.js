@@ -21,18 +21,6 @@
 		return m2str;
 	};
 
-	this.prototype.distanceFrom = function(newLatLng) {
-		var radianLat1 = this.lat() * (Math.PI / 180);
-		var radianLng1 = this.lng() * (Math.PI / 180);
-		var radianLat2 = newLatLng.lat() * (Math.PI / 180);
-		var radianLng2 = newLatLng.lng() * (Math.PI / 180);
-		var earth_radius = 6378.1;
-		var sinLat = Math.sin((radianLat1 - radianLat2) / 2);
-		var sinLng = Math.sin((radianLng1 - radianLng2) / 2);
-		var a = Math.pow(sinLat, 2.0) + Math.cos(radianLat1) * Math.cos(radianLat2) * Math.pow(sinLng, 2.0);
-		return earth_radius * 2 * Math.asin(Math.min(1, Math.sqrt(a)));
-	};
-
 	var myfloor = function(val, n) {
 		var s = Math.pow(10, n);
 		return Math.floor(val * s) / s;
