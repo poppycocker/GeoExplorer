@@ -1,4 +1,8 @@
 ;
+Number.prototype.round = function(d) {
+	d = Math.pow(10, d || 1);
+	return Math.round(this * d) / d;
+};
 (function() {
 	this.Gx = this.Gx || {};
 	this.Gx.InfoView = Backbone.View.extend({
