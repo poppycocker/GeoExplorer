@@ -2,8 +2,8 @@
 (function() {
 	this.Gx = this.Gx || {};
 	this.Gx.Searcher = (function() {
-		var c = function(appView) {
-			this.appView = appView;
+		var c = function(app) {
+			this.app = app;
 			this.geocoder = new google.maps.Geocoder();
 		};
 		c.prototype = {
@@ -11,7 +11,7 @@
 				var coord = this.getLatLngFromString(key);
 				if (coord.OK) {
 					key = new google.maps.LatLng(coord.lat, coord.lng);
-					this.appView.updateViews({
+					this.app.updateViews({
 						centerPos: key,
 						markerPos: key
 					});
@@ -23,12 +23,12 @@
 						latLng = results[0].geometry.location;
 					}
 					if (!coord.OK && latLng) {
-						this.appView.updateViews({
+						this.app.updateViews({
 							centerPos: latLng,
 							markerPos: latLng
 						});
 					}
-					this.appView.updateViews({
+					this.app.updateViews({
 						geocodeResults: results,
 						bookmarkKey: key
 					});

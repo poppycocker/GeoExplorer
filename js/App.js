@@ -3,12 +3,12 @@ Number.prototype.round = function(d) {
 	return Math.round(this * d) / d;
 };
 
-$(function() {
-
+(function() {
 	var lastStateKey = 'lastState_GeoExplorer';
 	var bookmarkKey = 'bookmarks_GeoExplorer';
 
-	var AppView = Backbone.View.extend({
+	this.Gx = this.Gx || {};
+	this.Gx.AppView = Backbone.View.extend({
 		el: '#wrapper',
 		initialize: function() {
 			this.searcher = new Gx.Searcher(this);
@@ -17,47 +17,25 @@ $(function() {
 			this.infoView = new InfoView();
 			this.bookmarkView = new BookmarkView();
 
-			_.bindAll(this, 'setClickListener', 'setBoundsChangeListener');
-			this.setClickListener();
-			this.setBoundsChangeListener();
-
-			// Save current state to localStorage on close
-			window.onbeforeunload = _.bind(function() {
-				this.mapView.saveState();
-				this.bookmarkView.save();
-			}, this);
-		},
-		setClickListener: function() {
-			google.maps.event.addListener(this.mapView.map, 'click', _.bind(function(me) {
-				this.jump(me.latLng);
-			}, this));
-		},
-		setBoundsChangeListener: function() {
-			var map = this.mapView.map;
-			google.maps.event.addListener(map, 'bounds_changed', _.bind(function() {
-				this.infoView.refreshBounds(map);
-			}, this));
-			this.jump(map.getCenter());
-		},
-		toggleInformation: function() {
-			this.infoView.toggle();
 		},
 		jump: function(latLng, centering) {
-			if (centering) {
-				this.mapView.setCenter(latLng);
-			}
-			this.mapView.createMarker(latLng);
+			this.updateViews({
+				centerPos: (centering ? latLng : null),
+				markerPos: latLng
+			});
 			this.searcher.geocode(latLng, _.bind(function(results) {
-				this.infoView.setGeocodeResult(results);
+				this.updateViews({
+					geocodeResults: results
+				});
 			}, this));
 			this.bookmarkView.hide();
 		},
 		updateViews: function(params) {
 			if (params.centerPos) {
-				this.mapView.createMarker(params.centerPos);
+				this.mapView.setCenter(params.centerPos);
 			}
 			if (params.markerPos) {
-				this.mapView.setCenter(params.markerPos);
+				this.mapView.createMarker(params.markerPos);
 			}
 			if (params.geocodeResults) {
 				this.infoView.setGeocodeResult(params.geocodeResults);
@@ -403,7 +381,7 @@ $(function() {
 			}
 		},
 		add: function() {
-			var latLng = appView.mapView.map.getCenter();
+			var latLng = app.mapView.map.getCenter();
 			var val = this.$input.val();
 			if (val === '') {
 				return;
@@ -490,7 +468,7 @@ $(function() {
 			if (this.removeFlg) {
 				return;
 			}
-			appView.jump(new google.maps.LatLng(this.model.get('lat'), this.model.get('lng')), true);
+			app.jump(new google.maps.LatLng(this.model.get('lat'), this.model.get('lng')), true);
 		},
 		onSelect: function() {
 			this.$el.addClass('bkm_li_hover');
@@ -520,8 +498,28 @@ $(function() {
 		}
 	});
 
+}).call(this);
+
+$(function() {
 	// finally, create AppView to start the application.
-	window.appView = new AppView();
+	window.app = new Gx.AppView();
+
+	// Set listeners
+	(function() {
+		// Save current state to localStorage on close
+		window.onbeforeunload = function() {
+			app.mapView.saveState();
+			app.bookmarkView.save();
+		};
+		var map = app.mapView.map;
+		google.maps.event.addListener(map, 'click', function(me) {
+			app.jump(me.latLng);
+		});
+		google.maps.event.addListener(map, 'bounds_changed', function() {
+			app.infoView.refreshBounds(map);
+		});
+		app.jump(map.getCenter());
+	})();
 
 	// Set short-cut keys
 	(function() {
@@ -530,7 +528,7 @@ $(function() {
 				'propagate': true,
 				'target': document
 			},
-			map = appView.mapView.map;
+			map = app.mapView.map;
 
 		shortcut.add('Shift+PageUp', function() {
 			map.setZoom(map.getZoom() + 1);
@@ -538,15 +536,14 @@ $(function() {
 		shortcut.add('Shift+PageDown', function() {
 			map.setZoom(map.getZoom() - 1);
 		}, opts);
-
 		shortcut.add('Ctrl+Enter', _.bind(function() {
-			appView.toggleInformation();
+			app.infoView.toggle();
 		}, this), opts);
 		shortcut.add('Ctrl+Q', _.bind(function() {
-			appView.searchView.focus();
+			app.searchView.focus();
 		}, this), opts);
 		shortcut.add('Ctrl+M', _.bind(function() {
-			appView.bookmarkView.toggleBookmark();
+			app.bookmarkView.toggleBookmark();
 		}, this), opts);
 	})();
 
