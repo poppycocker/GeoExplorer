@@ -11,10 +11,11 @@ $(function() {
 	var AppView = Backbone.View.extend({
 		el: '#wrapper',
 		initialize: function() {
-			this.mapView = new MapView({});
-			this.searchView = new SearchView({});
-			this.infoView = new InfoView({});
-			this.bookmarkView = new BookmarkView({});
+			this.searcher = new Gx.Searcher(this);
+			this.mapView = new MapView();
+			this.searchView = new SearchView(this.searcher);
+			this.infoView = new InfoView();
+			this.bookmarkView = new BookmarkView();
 
 			_.bindAll(this, 'setClickListener', 'setBoundsChangeListener');
 			this.setClickListener();
@@ -46,10 +47,24 @@ $(function() {
 				this.mapView.setCenter(latLng);
 			}
 			this.mapView.createMarker(latLng);
-			this.mapView.geocode(latLng, _.bind(function(results) {
+			this.searcher.geocode(latLng, _.bind(function(results) {
 				this.infoView.setGeocodeResult(results);
 			}, this));
 			this.bookmarkView.hide();
+		},
+		updateViews: function(params) {
+			if (params.centerPos) {
+				this.mapView.createMarker(params.centerPos);
+			}
+			if (params.markerPos) {
+				this.mapView.setCenter(params.markerPos);
+			}
+			if (params.geocodeResults) {
+				this.infoView.setGeocodeResult(params.geocodeResults);
+			}
+			if (params.bookmarkKey) {
+				this.bookmarkView.setSearchKey(params.bookmarkKey);
+			}
 		}
 	});
 
@@ -75,57 +90,7 @@ $(function() {
 			};
 
 			this.map = new google.maps.Map(document.getElementById('map_canvas'), options);
-			this.geocoder = new google.maps.Geocoder();
 			this.posMarker = null;
-		},
-		onSearch: function(key, callback) {
-			var coord = this.getLatLngFromString(key);
-			if (coord.OK) {
-				key = new google.maps.LatLng(coord.lat, coord.lng);
-				this.createMarker(key);
-				this.setCenter(key);
-			}
-
-			this.geocode(key, _.bind(function(results) {
-				var latLng;
-				if (results[0] && results[0].geometry) {
-					latLng = results[0].geometry.location;
-				}
-				if (!coord.OK && latLng) {
-					this.createMarker(latLng);
-					this.setCenter(latLng);
-				}
-				callback(results);
-			}, this));
-		},
-		getLatLngFromString: function(latlng) {
-			var translated, tmp1 = latlng.replace('北緯', 'N').replace('南緯', 'S').replace('西経', 'W').replace('東経', 'E').trim(),
-				tmp2 = latlng.replace(/\.|,|\'/g, ' ').replace(/"/g, '').replace('N', 'N ').replace('S', 'S ').replace('E', 'E ').replace('W', 'W ');
-			var tmp2idx = tmp2.search(/N|S/);
-			tmp2 = tmp2.substr(tmp2idx) + '00 ' + tmp2.substr(0, tmp2idx - 1) + '00';
-			if (tmp1.match(/(N|S)(\s\d{1,3}){4}\s(E|W)(\s\d{1,3}){3,4}/)) {
-				translated = tmp1;
-			} else if (tmp2.match(/(N|S)(\s\d{1,3}){4}\s(E|W)(\s\d{1,3}){3,4}/)) {
-				translated = tmp2;
-			} else {
-				return {
-					lat: 0,
-					lng: 0,
-					OK: false
-				};
-			}
-
-			var ar = translated.split(' ').map(function(v) {
-				return parseInt(v, 10);
-			});
-			var lat = ar[1] + ar[2] / 60 + ar[3] / 3600 + ar[4] / 3600 / 1000;
-			var lng = ar[6] + ar[7] / 60 + ar[8] / 3600 + (ar[9] ? ar[9] / 3600 / 1000 : 0);
-
-			return {
-				lat: (translated.match(/S/)) ? lat * (-1) : lat,
-				lng: (translated.match(/W/)) ? lng * (-1) : lng,
-				OK: true
-			};
 		},
 		clearMarker: function() {
 			if (this.posMarker) {
@@ -145,28 +110,6 @@ $(function() {
 		setCenter: function(latLng) {
 			this.map.setCenter(latLng);
 		},
-		geocode: function(key, callback) {
-			var q = {};
-			if (key instanceof google.maps.LatLng) {
-				q.latLng = key;
-			} else {
-				q.address = key;
-			}
-
-			this.geocoder.geocode(q, function(results, status) {
-				if (status !== google.maps.GeocoderStatus.OK) {
-					results = [];
-					if (q.latLng) {
-						results.push({
-							geometry: {
-								location: q.latLng
-							}
-						});
-					}
-				}
-				callback(results);
-			});
-		},
 		saveState: function() {
 			var center = this.map.getCenter();
 			window.localStorageWrapper.data(lastStateKey, {
@@ -182,17 +125,15 @@ $(function() {
 		events: {
 			'keyup': 'onSearch'
 		},
-		initialize: function() {
+		initialize: function(searcher) {
 			_.bindAll(this, 'onSearch', 'focus');
+			this.searcher = searcher;
 			this.$el.val('');
 		},
 		onSearch: function(e) {
 			var str = this.$el.val();
 			if (e.keyCode === 13 && str !== '') {
-				appView.mapView.onSearch(str, function(results) {
-					appView.infoView.setGeocodeResult(results);
-					appView.bookmarkView.setSearchKey(str);
-				});
+				this.searcher.search(str);
 			}
 		},
 		focus: function() {
@@ -357,7 +298,7 @@ $(function() {
 			};
 		}
 	});
-	var AddressCollection = Backbone.Collection.extend({});
+	var AddressCollection = Backbone.Collection.extend();
 
 
 	var BookmarkView = Backbone.View.extend({
