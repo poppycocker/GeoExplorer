@@ -24,10 +24,9 @@ $(function() {
 			// elements
 			this.$inputAddress = $('#input_address');
 
-			_.bindAll(this, 'setClickListener', 'setBoundsChangeListener', 'setShortcutKeys');
+			_.bindAll(this, 'setClickListener', 'setBoundsChangeListener');
 			this.setClickListener();
 			this.setBoundsChangeListener();
-			this.setShortcutKeys();
 
 			// Save current state to localStorage on close
 			window.onbeforeunload = _.bind(function() {
@@ -46,32 +45,6 @@ $(function() {
 				this.infoView.refreshBounds(map);
 			}, this));
 			this.jump(map.getCenter());
-		},
-		setShortcutKeys: function() {
-			// short-cut key settings
-			var opts = {
-					'type': 'keydown',
-					'propagate': true,
-					'target': document
-				},
-				map = this.mapView.map;
-
-			shortcut.add('Shift+PageUp', function() {
-				map.setZoom(map.getZoom() + 1);
-			}, opts);
-			shortcut.add('Shift+PageDown', function() {
-				map.setZoom(map.getZoom() - 1);
-			}, opts);
-
-			shortcut.add('Ctrl+Enter', _.bind(function() {
-				this.toggleInformation();
-			}, this), opts);
-			shortcut.add('Ctrl+Q', _.bind(function() {
-				this.$inputAddress.focus().select();
-			}, this), opts);
-			shortcut.add('Ctrl+M', _.bind(function() {
-				this.toggleBookmark();
-			}, this), opts);
 		},
 		toggleBookmark: function() {
 			this.bookmarkView.toggle();
@@ -149,7 +122,7 @@ $(function() {
 			var translated, tmp1 = latlng.replace('北緯', 'N').replace('南緯', 'S').replace('西経', 'W').replace('東経', 'E').trim(),
 				tmp2 = latlng.replace(/\.|,|\'/g, ' ').replace(/"/g, '').replace('N', 'N ').replace('S', 'S ').replace('E', 'E ').replace('W', 'W ');
 			var tmp2idx = tmp2.search(/N|S/);
-				tmp2 = tmp2.substr(tmp2idx) + '00 ' + tmp2.substr(0, tmp2idx - 1) + '00';
+			tmp2 = tmp2.substr(tmp2idx) + '00 ' + tmp2.substr(0, tmp2idx - 1) + '00';
 			if (tmp1.match(/(N|S)(\s\d{1,3}){4}\s(E|W)(\s\d{1,3}){3,4}/)) {
 				translated = tmp1;
 			} else if (tmp2.match(/(N|S)(\s\d{1,3}){4}\s(E|W)(\s\d{1,3}){3,4}/)) {
@@ -581,6 +554,33 @@ $(function() {
 
 	// finally, create AppView to start the application.
 	window.appView = new AppView();
+
+	// Set short-cut keys
+	(function() {
+		var opts = {
+				'type': 'keydown',
+				'propagate': true,
+				'target': document
+			},
+			map = appView.mapView.map;
+
+		shortcut.add('Shift+PageUp', function() {
+			map.setZoom(map.getZoom() + 1);
+		}, opts);
+		shortcut.add('Shift+PageDown', function() {
+			map.setZoom(map.getZoom() - 1);
+		}, opts);
+
+		shortcut.add('Ctrl+Enter', _.bind(function() {
+			appView.toggleInformation();
+		}, this), opts);
+		shortcut.add('Ctrl+Q', _.bind(function() {
+			appView.$inputAddress.focus().select();
+		}, this), opts);
+		shortcut.add('Ctrl+M', _.bind(function() {
+			appView.toggleBookmark();
+		}, this), opts);
+	})();
 
 	// map & address_info & bookmark box fixer
 	(function(f) {
