@@ -1,9 +1,9 @@
-;
-Number.prototype.round = function(d) {
-	d = Math.pow(10, d || 1);
-	return Math.round(this * d) / d;
-};
-(function() {
+;(function() {
+	Number.prototype.round = function(d) {
+		d = Math.pow(10, d || 1);
+		return Math.round(this * d) / d;
+	};
+
 	this.Gx = this.Gx || {};
 	this.Gx.InfoView = Backbone.View.extend({
 		el: '#informations',

@@ -1,5 +1,4 @@
-;
-(function() {
+;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.BookmarkView = Backbone.View.extend({
 		el: '#bookmark_box',

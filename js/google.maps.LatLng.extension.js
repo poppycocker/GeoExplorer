@@ -1,5 +1,4 @@
-(function() {
-
+;(function() {
 	this.prototype.get2MeshCode = function() {
 		var lat_m1 = Math.floor(this.lat() / 2 * 3 + 90 / 2 * 3);
 		var lng_m1 = Math.floor(this.lng() + 180);
@@ -8,7 +7,7 @@
 
 		var strlat_m1 = lat_m1.toString();
 		var strlng_m1 = lng_m1.toString();
-		var tmpl;
+		var tmpl, i;
 		tmpl = strlat_m1.length;
 		for (i = 0; i < 3 - tmpl; i++) {
 			strlat_m1 = '0' + strlat_m1;
@@ -68,7 +67,7 @@
 
 		tmp_array = lng_array[2].toString().split('.');
 		var lngstrK = ewstr + ' ' + lng_array[0] + ' ' + lng_array[1];
-		for (i = 0; i < tmp_array.length; i++) {
+		for (var i = 0; i < tmp_array.length; i++) {
 			lngstrK += ' ' + tmp_array[i];
 		}
 		var m2str = latstrK + ' ' + lngstrK;

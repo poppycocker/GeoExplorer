@@ -1,4 +1,4 @@
-(function() {
+;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.lastStateKey = 'lastState_GeoExplorer';
 	this.Gx.bookmarkKey = 'bookmarks_GeoExplorer';

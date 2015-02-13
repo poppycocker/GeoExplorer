@@ -1,5 +1,4 @@
-;
-(function() {
+;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.SearchView = Backbone.View.extend({
 		el: '#input_address',

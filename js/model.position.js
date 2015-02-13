@@ -1,5 +1,4 @@
-;
-(function() {
+;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.PositionModel = Backbone.Model.extend({
 		defaults: function() {

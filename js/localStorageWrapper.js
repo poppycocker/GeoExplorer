@@ -1,4 +1,4 @@
-(function() {
+;(function() {
 	this.localStorageWrapper = {
 		data: function(key, val) {
 			var ls = window.localStorage, item;

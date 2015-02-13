@@ -1,5 +1,4 @@
-;
-(function() {
+;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.MapView = Backbone.View.extend({
 		el: '#map_canvas',
