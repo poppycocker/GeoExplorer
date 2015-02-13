@@ -4,7 +4,7 @@
 		el: '#map_canvas',
 		initialize: function() {
 			// Generate the Map, get last state from localStorage
-			var lastState = window.localStorageWrapper.data(Gx.lastStateKey) || {};
+			var lastState = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
 			var latlng = new google.maps.LatLng(lastState.lat || 35.5291699, lastState.lng || 139.6958934);
 			var options = {
 				zoom: lastState.zoom || 9,
@@ -44,7 +44,7 @@
 		},
 		saveState: function() {
 			var center = this.map.getCenter();
-			window.localStorageWrapper.data(Gx.lastStateKey, {
+			Gx.Utils.localStorageWrapper.data(Gx.lastStateKey, {
 				lat: center.lat(),
 				lng: center.lng(),
 				zoom: this.map.getZoom()

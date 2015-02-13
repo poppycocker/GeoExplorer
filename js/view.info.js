@@ -1,9 +1,4 @@
 ;(function() {
-	Number.prototype.round = function(d) {
-		d = Math.pow(10, d || 1);
-		return Math.round(this * d) / d;
-	};
-
 	this.Gx = this.Gx || {};
 	this.Gx.InfoView = Backbone.View.extend({
 		el: '#informations',
@@ -22,12 +17,12 @@
 		},
 		refreshBounds: function(map) {
 			var c = map.getCenter();
-
+			var r = Gx.Utils.round;
 			this.centerInfoView.model.set({
 				meshcode: c.get2MeshCode(),
 				latLngStr: c.getLatLonStr(),
-				lat: c.lat().round(6),
-				lng: c.lng().round(6),
+				lat: r(c.lat(), 7),
+				lng: r(c.lng(), 7),
 				lat256s: c.getLat256s(),
 				lng256s: c.getLng256s(),
 				zoom: map.getZoom()
@@ -38,6 +33,7 @@
 		},
 		setGeocodeResult: function(results) {
 			var latLng;
+			var r = Gx.Utils.round;
 			if (results[0] && results[0].geometry) {
 				latLng = results[0].geometry.location;
 			}
@@ -45,8 +41,8 @@
 				this.clickedPointView.model.set({
 					meshcode: latLng.get2MeshCode(),
 					latLngStr: latLng.getLatLonStr(),
-					lat: latLng.lat().round(6),
-					lng: latLng.lng().round(6),
+					lat: r(latLng.lat(), 7),
+					lng: r(latLng.lng(), 7),
 					lat256s: latLng.getLat256s(),
 					lng256s: latLng.getLng256s()
 				});

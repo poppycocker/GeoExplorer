@@ -347,7 +347,9 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 	};
 }).call(this);
 ;(function() {
-	this.localStorageWrapper = {
+	this.Gx = this.Gx || {};
+	this.Gx.Utils = {};
+	this.Gx.Utils.localStorageWrapper = {
 		data: function(key, val) {
 			var ls = window.localStorage, item;
 			if (!ls || !key) {
@@ -363,6 +365,10 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 		remove: function(key) {
 			window.localStorage.removeItem(key);
 		}
+	};
+	this.Gx.Utils.round = function(val, digit) {
+		var d = Math.pow(10, digit || 1);
+		return Math.round(val * d) / d;
 	};
 }).call(this);
 ;(function() {
@@ -618,7 +624,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			this.idx = 0;
 		},
 		load: function() {
-			var bookMarks = window.localStorageWrapper.data(Gx.bookmarkKey) || Gx.defaultBookmark;
+			var bookMarks = Gx.Utils.localStorageWrapper.data(Gx.bookmarkKey) || Gx.defaultBookmark;
 			if (bookMarks instanceof Array) {
 				_.each(bookMarks.sort(function(a, b) {
 					return a.locationName > b.locationName;
@@ -698,9 +704,9 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				return model.attributes;
 			});
 			if (data.length)
-				window.localStorageWrapper.data(Gx.bookmarkKey, data);
+				Gx.Utils.localStorageWrapper.data(Gx.bookmarkKey, data);
 			else
-				window.localStorageWrapper.remove(Gx.bookmarkKey);
+				Gx.Utils.localStorageWrapper.remove(Gx.bookmarkKey);
 		},
 		render: function(model) {
 			var view = new Gx.BookmarkUnitView({
@@ -785,11 +791,6 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 	});
 }).call(this);
 ;(function() {
-	Number.prototype.round = function(d) {
-		d = Math.pow(10, d || 1);
-		return Math.round(this * d) / d;
-	};
-
 	this.Gx = this.Gx || {};
 	this.Gx.InfoView = Backbone.View.extend({
 		el: '#informations',
@@ -808,12 +809,12 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 		},
 		refreshBounds: function(map) {
 			var c = map.getCenter();
-
+			var r = Gx.Utils.round;
 			this.centerInfoView.model.set({
 				meshcode: c.get2MeshCode(),
 				latLngStr: c.getLatLonStr(),
-				lat: c.lat().round(6),
-				lng: c.lng().round(6),
+				lat: r(c.lat(), 7),
+				lng: r(c.lng(), 7),
 				lat256s: c.getLat256s(),
 				lng256s: c.getLng256s(),
 				zoom: map.getZoom()
@@ -824,6 +825,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 		},
 		setGeocodeResult: function(results) {
 			var latLng;
+			var r = Gx.Utils.round;
 			if (results[0] && results[0].geometry) {
 				latLng = results[0].geometry.location;
 			}
@@ -831,8 +833,8 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				this.clickedPointView.model.set({
 					meshcode: latLng.get2MeshCode(),
 					latLngStr: latLng.getLatLonStr(),
-					lat: latLng.lat().round(6),
-					lng: latLng.lng().round(6),
+					lat: r(latLng.lat(), 7),
+					lng: r(latLng.lng(), 7),
 					lat256s: latLng.getLat256s(),
 					lng256s: latLng.getLng256s()
 				});
@@ -920,7 +922,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 		el: '#map_canvas',
 		initialize: function() {
 			// Generate the Map, get last state from localStorage
-			var lastState = window.localStorageWrapper.data(Gx.lastStateKey) || {};
+			var lastState = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
 			var latlng = new google.maps.LatLng(lastState.lat || 35.5291699, lastState.lng || 139.6958934);
 			var options = {
 				zoom: lastState.zoom || 9,
@@ -960,7 +962,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 		},
 		saveState: function() {
 			var center = this.map.getCenter();
-			window.localStorageWrapper.data(Gx.lastStateKey, {
+			Gx.Utils.localStorageWrapper.data(Gx.lastStateKey, {
 				lat: center.lat(),
 				lng: center.lng(),
 				zoom: this.map.getZoom()
@@ -1039,6 +1041,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				});
 			}, this));
 			this.bookmarkView.hide();
+			return this;
 		},
 		render: function(params) {
 			if (params.centerPos) {
@@ -1053,6 +1056,9 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			if (params.bookmarkTitle) {
 				this.bookmarkView.setSearchKey(params.bookmarkTitle);
 			}
+			if (params.zoom) {
+				this.mapView.map.setZoom(params.zoom);
+			}
 			return this;
 		}
 	});
@@ -1060,8 +1066,28 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 }).call(this);
 
 $(function() {
-	// finally, create AppView to start the application.
+	// Finally, create AppView to start the application.
 	window.app = new Gx.AppView();
+
+	// Start Router
+	var Router = Backbone.Router.extend({
+		routes: {
+			'(:coord)': 'jump'
+		},
+		jump: function(coord) {
+			if (!coord || !coord.match(/^(-{0,1}\d+\.{0,1}\d+,){2}\d+$/g)) {
+				return;
+			}
+			var sp = coord.split(',').map(function(v) {
+				return +v;
+			});
+			app.jump(new google.maps.LatLng(sp[0], sp[1]), true).render({
+				zoom: sp[2]
+			});
+		}
+	});
+	Gx.router = new Router();
+	Backbone.history.start();
 
 	// Set listeners
 	(function() {
@@ -1076,6 +1102,14 @@ $(function() {
 		});
 		google.maps.event.addListener(map, 'bounds_changed', function() {
 			app.infoView.refreshBounds(map);
+		});
+		google.maps.event.addListener(map, 'idle', function() {
+			var m = app.mapView.map;
+			var c = m.getCenter();
+			var query = [c.lat(), c.lng(), m.getZoom()].map(function(v) {
+				return Gx.Utils.round(+v, 7);
+			}).join(',');
+			Gx.router.navigate(query, false);
 		});
 		app.jump(map.getCenter());
 	})();

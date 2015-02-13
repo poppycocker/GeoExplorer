@@ -23,7 +23,7 @@ module.exports = function(grunt) {
                     'js/google.maps.LatLng.extension.js',
                     'js/jquery.animate-colors-min.js',
                     'js/shortcut.js',
-                    'js/localStorageWrapper.js',
+                    'js/utils.js',
                     'js/searcher.js',
                     'js/view.search.js',
                     'js/bookmarks.js',

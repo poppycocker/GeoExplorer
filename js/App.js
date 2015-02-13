@@ -23,6 +23,7 @@
 				});
 			}, this));
 			this.bookmarkView.hide();
+			return this;
 		},
 		render: function(params) {
 			if (params.centerPos) {
@@ -37,6 +38,9 @@
 			if (params.bookmarkTitle) {
 				this.bookmarkView.setSearchKey(params.bookmarkTitle);
 			}
+			if (params.zoom) {
+				this.mapView.map.setZoom(params.zoom);
+			}
 			return this;
 		}
 	});
@@ -44,8 +48,28 @@
 }).call(this);
 
 $(function() {
-	// finally, create AppView to start the application.
+	// Finally, create AppView to start the application.
 	window.app = new Gx.AppView();
+
+	// Start Router
+	var Router = Backbone.Router.extend({
+		routes: {
+			'(:coord)': 'jump'
+		},
+		jump: function(coord) {
+			if (!coord || !coord.match(/^(-{0,1}\d+\.{0,1}\d+,){2}\d+$/g)) {
+				return;
+			}
+			var sp = coord.split(',').map(function(v) {
+				return +v;
+			});
+			app.jump(new google.maps.LatLng(sp[0], sp[1]), true).render({
+				zoom: sp[2]
+			});
+		}
+	});
+	Gx.router = new Router();
+	Backbone.history.start();
 
 	// Set listeners
 	(function() {
@@ -60,6 +84,14 @@ $(function() {
 		});
 		google.maps.event.addListener(map, 'bounds_changed', function() {
 			app.infoView.refreshBounds(map);
+		});
+		google.maps.event.addListener(map, 'idle', function() {
+			var m = app.mapView.map;
+			var c = m.getCenter();
+			var query = [c.lat(), c.lng(), m.getZoom()].map(function(v) {
+				return Gx.Utils.round(+v, 7);
+			}).join(',');
+			Gx.router.navigate(query, false);
 		});
 		app.jump(map.getCenter());
 	})();
