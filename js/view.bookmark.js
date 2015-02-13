@@ -38,7 +38,7 @@
 			this.idx = 0;
 		},
 		load: function() {
-			var bookMarks = window.localStorageWrapper.data(Gx.bookmarkKey) || Gx.defaultBookmark;
+			var bookMarks = Gx.Utils.localStorageWrapper.data(Gx.bookmarkKey) || Gx.defaultBookmark;
 			if (bookMarks instanceof Array) {
 				_.each(bookMarks.sort(function(a, b) {
 					return a.locationName > b.locationName;
@@ -118,9 +118,9 @@
 				return model.attributes;
 			});
 			if (data.length)
-				window.localStorageWrapper.data(Gx.bookmarkKey, data);
+				Gx.Utils.localStorageWrapper.data(Gx.bookmarkKey, data);
 			else
-				window.localStorageWrapper.remove(Gx.bookmarkKey);
+				Gx.Utils.localStorageWrapper.remove(Gx.bookmarkKey);
 		},
 		render: function(model) {
 			var view = new Gx.BookmarkUnitView({

@@ -88,7 +88,10 @@ $(function() {
 		google.maps.event.addListener(map, 'idle', function() {
 			var m = app.mapView.map;
 			var c = m.getCenter();
-			Gx.router.navigate([c.lat(), c.lng(), m.getZoom()].join(','), false);
+			var query = [c.lat(), c.lng(), m.getZoom()].map(function(v) {
+				return Gx.Utils.round(+v, 7);
+			}).join(',');
+			Gx.router.navigate(query, false);
 		});
 		app.jump(map.getCenter());
 	})();
