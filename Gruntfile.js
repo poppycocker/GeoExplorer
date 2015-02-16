@@ -1,7 +1,6 @@
 module.exports = function(grunt) {
     var pkg = grunt.file.readJSON('package.json');
     // http://havelog.ayumusato.com/develop/javascript/e580-own_concat_pattern.html
-    var RE_USE_STRICT_STATEMENT = /(^|\n)[ \t]*'use strict';?\s*/g;
     grunt.initConfig({
         concat: {
             options: {
@@ -18,8 +17,10 @@ module.exports = function(grunt) {
             },
             files: {
                 // 元ファイルの指定
-                // src: 'js/*.js',
                 src: [
+                    'bower_components/jquery/dist/jquery.js',
+                    'bower_components/underscore/underscore.js',
+                    'bower_components/backbone/backbone.js',
                     'js/google.maps.LatLng.extension.js',
                     'js/jquery.animate-colors-min.js',
                     'js/shortcut.js',

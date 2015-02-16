@@ -1,0 +1,23 @@
+{
+  "name": "GeoExplorer",
+  "version": "1.0.0",
+  "main": "js/app.js",
+  "authors": [
+    "poppycocker"
+  ],
+  "license": "MIT",
+  "homepage": "http://poppycocker.github.io/GeoExplorer/",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "2",
+    "backbone": "~1.1.2",
+    "underscore": "~1.7.0"
+  }
+}
