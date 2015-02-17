@@ -32,6 +32,8 @@ module.exports = function(grunt) {
                     'js/view.info.js',
                     'js/view.address.js',
                     'js/view.map.js',
+                    'js/view.map.google.js',
+                    'js/view.map.leaflet.js',
                     'js/model.bookmark.js',
                     'js/model.position.js',
                     'js/model.address.js',

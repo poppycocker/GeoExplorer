@@ -13150,13 +13150,41 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 ;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.MapView = Backbone.View.extend({
-		el: '#map_canvas',
-		initialize: function() {
-			// Generate the Map, get last state from localStorage
-			var lastState = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
-			var latlng = new google.maps.LatLng(lastState.lat || 35.5291699, lastState.lng || 139.6958934);
-			var options = {
-				zoom: lastState.zoom || 9,
+		saveState: function() {
+			var c = this.getCenter();
+			Gx.Utils.localStorageWrapper.data(Gx.lastStateKey, {
+				lat: c.lat,
+				lng: c.lng,
+				zoom: this.getZoom(),
+				type: this.type
+			});
+		},
+		getZoom: function() {
+			return this.map.getZoom();
+		},
+		setZoom: function(val) {
+			this.map.setZoom(val);
+		},
+		show: function(flg) {
+			if (flg) {
+				this.$el.show();
+			} else {
+				this.$el.hide();
+			}
+		},
+		toggle: function() {
+			this.$el.toggle();
+		}
+	});
+}).call(this);
+;(function() {
+	this.Gx.MapViewGoogle = this.Gx.MapView.extend({
+		initialize: function(options) {
+			this.type = 'g';
+			var init = options.lastState;
+			var latlng = new google.maps.LatLng(init.lat, init.lng);
+			var mapOpts = {
+				zoom: init.zoom,
 				center: latlng,
 				mapTypeControl: true,
 				mapTypeControlOptions: {
@@ -13169,8 +13197,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				},
 				mapTypeId: google.maps.MapTypeId.ROADMAP
 			};
-
-			this.map = new google.maps.Map(document.getElementById('map_canvas'), options);
+			this.map = new google.maps.Map(this.$el.get(0), mapOpts);
 			this.posMarker = null;
 		},
 		clearMarker: function() {
@@ -13178,24 +13205,78 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				this.posMarker.setMap(null);
 			}
 		},
-		createMarker: function(latLng) {
+		createMarker: function(lat, lng) {
 			this.clearMarker();
 			this.posMarker = new google.maps.Marker({
 				map: this.map,
-				position: latLng
+				position: new google.maps.LatLng(lat, lng)
 			});
 			this.posMarker.addListener('click', _.bind(function(me) {
-				this.setCenter(me.latLng);
+				this.setCenter(me.latLng.lat(), me.latLng.lng());
 			}, this));
 		},
-		setCenter: function(latLng) {
-			this.map.setCenter(latLng);
+		getCenter: function() {
+			var c = this.map.getCenter();
+			return {
+				lat: c.lat(),
+				lng: c.lng()
+			};
+		},
+		setCenter: function(lat, lng) {
+			this.map.setCenter(new google.maps.LatLng(lat, lng));
 		},
 		saveState: function() {
 			var center = this.map.getCenter();
 			Gx.Utils.localStorageWrapper.data(Gx.lastStateKey, {
 				lat: center.lat(),
 				lng: center.lng(),
+				zoom: this.map.getZoom()
+			});
+		}
+	});
+}).call(this);
+;(function() {
+	this.Gx.MapViewLeaflet = this.Gx.MapView.extend({
+		initialize: function(options) {
+			this.type = 'l';
+			var init = options.lastState;
+			var latLng = L.latLng(init.lat, init.lng);
+			this.map = L.map(this.$el.attr('id')).setView(latLng, init.zoom);
+			L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+				attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+				maxZoom: 18
+			}).addTo(this.map);
+			L.control.scale().addTo(this.map);
+			this.posMarker = null;
+		},
+		clearMarker: function() {
+			if (this.posMarker) {
+				this.map.removeLayer(this.posMarker);
+			}
+		},
+		createMarker: function(lat, lng) {
+			this.clearMarker();
+			this.posMarker = L.marker(lat, lng);
+			this.posMarker.addTo(this.map);
+			this.posMarker.on('click', _.bind(function(me) {
+				this.setCenter(me.latlng);
+			}, this));
+		},
+		getCenter: function() {
+			var c = this.map.getCenter();
+			return {
+				lat: c.lat,
+				lng: c.lng
+			};
+		},
+		setCenter: function(lat, lng) {
+			this.map.panTo(L.latLng(lat, lng));
+		},
+		saveState: function() {
+			var center = this.map.getCenter();
+			Gx.Utils.localStorageWrapper.data(Gx.lastStateKey, {
+				lat: center.lat,
+				lng: center.lng,
 				zoom: this.map.getZoom()
 			});
 		}
@@ -13247,7 +13328,8 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 	});
 	this.Gx.AddressCollection = Backbone.Collection.extend();
 }).call(this);
-;(function() {
+;
+(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.lastStateKey = 'lastState_GeoExplorer';
 	this.Gx.bookmarkKey = 'bookmarks_GeoExplorer';
@@ -13255,8 +13337,25 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 	this.Gx.AppView = Backbone.View.extend({
 		el: '#wrapper',
 		initialize: function() {
+			// Generate the Map, get last state from localStorage
+			var lastState = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
+			lastState.lat = lastState.lat || 35.5291699;
+			lastState.lng = lastState.lng || 139.6958934;
+			lastState.zoom = lastState.zoom || 9;
+			lastState.type = lastState.type || 'g';
+			this.mapViews = [
+				new Gx.MapViewGoogle({
+					el: '#map_canvas',
+					lastState: lastState
+				}),
+				new Gx.MapViewLeaflet({
+					el: '#map_leaflet',
+					lastState: lastState
+				})
+			];
+			this.toggleMap(lastState.type);
+
 			this.searcher = new Gx.Searcher(this);
-			this.mapView = new Gx.MapView();
 			this.searchView = new Gx.SearchView(this.searcher);
 			this.infoView = new Gx.InfoView();
 			this.bookmarkView = new Gx.BookmarkView();
@@ -13291,6 +13390,16 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				this.mapView.map.setZoom(params.zoom);
 			}
 			return this;
+		},
+		toggleMap: function(type) {
+			this.mapViews.forEach(_.bind(function(view) {
+				if (type) {
+					view.show(view.type === type);
+					this.mapView = view;
+				} else {
+					view.toggle();
+				}
+			}, this));
 		}
 	});
 
@@ -13360,15 +13469,19 @@ $(function() {
 		shortcut.add('Shift+PageDown', function() {
 			map.setZoom(map.getZoom() - 1);
 		}, opts);
-		shortcut.add('Ctrl+Enter', _.bind(function() {
+		shortcut.add('Ctrl+Enter', function() {
 			app.infoView.toggle();
-		}, this), opts);
-		shortcut.add('Ctrl+Q', _.bind(function() {
+		}, opts);
+		shortcut.add('Ctrl+Q', function() {
 			app.searchView.focus();
-		}, this), opts);
-		shortcut.add('Ctrl+M', _.bind(function() {
+		}, opts);
+		shortcut.add('Ctrl+M', function() {
 			app.bookmarkView.toggleBookmark();
-		}, this), opts);
+		}, opts);
+
+		shortcut.add('Ctrl+I', function() {
+			app.toggleMap();
+		}, opts);
 	})();
 
 	// map & address_info & bookmark box fixer
@@ -13391,6 +13504,5 @@ $(function() {
 			maxHeight: $(window).height() * 0.8 + 'px'
 		});
 	});
-
 });
 }).call(this);

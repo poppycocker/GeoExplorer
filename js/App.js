@@ -1,4 +1,5 @@
-;(function() {
+;
+(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.lastStateKey = 'lastState_GeoExplorer';
 	this.Gx.bookmarkKey = 'bookmarks_GeoExplorer';
@@ -6,8 +7,25 @@
 	this.Gx.AppView = Backbone.View.extend({
 		el: '#wrapper',
 		initialize: function() {
+			// Generate the Map, get last state from localStorage
+			var lastState = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
+			lastState.lat = lastState.lat || 35.5291699;
+			lastState.lng = lastState.lng || 139.6958934;
+			lastState.zoom = lastState.zoom || 9;
+			lastState.type = lastState.type || 'g';
+			this.mapViews = [
+				new Gx.MapViewGoogle({
+					el: '#map_canvas',
+					lastState: lastState
+				}),
+				new Gx.MapViewLeaflet({
+					el: '#map_leaflet',
+					lastState: lastState
+				})
+			];
+			this.toggleMap(lastState.type);
+
 			this.searcher = new Gx.Searcher(this);
-			this.mapView = new Gx.MapView();
 			this.searchView = new Gx.SearchView(this.searcher);
 			this.infoView = new Gx.InfoView();
 			this.bookmarkView = new Gx.BookmarkView();
@@ -42,6 +60,16 @@
 				this.mapView.map.setZoom(params.zoom);
 			}
 			return this;
+		},
+		toggleMap: function(type) {
+			this.mapViews.forEach(_.bind(function(view) {
+				if (type) {
+					view.show(view.type === type);
+					this.mapView = view;
+				} else {
+					view.toggle();
+				}
+			}, this));
 		}
 	});
 
@@ -111,15 +139,19 @@ $(function() {
 		shortcut.add('Shift+PageDown', function() {
 			map.setZoom(map.getZoom() - 1);
 		}, opts);
-		shortcut.add('Ctrl+Enter', _.bind(function() {
+		shortcut.add('Ctrl+Enter', function() {
 			app.infoView.toggle();
-		}, this), opts);
-		shortcut.add('Ctrl+Q', _.bind(function() {
+		}, opts);
+		shortcut.add('Ctrl+Q', function() {
 			app.searchView.focus();
-		}, this), opts);
-		shortcut.add('Ctrl+M', _.bind(function() {
+		}, opts);
+		shortcut.add('Ctrl+M', function() {
 			app.bookmarkView.toggleBookmark();
-		}, this), opts);
+		}, opts);
+
+		shortcut.add('Ctrl+I', function() {
+			app.toggleMap();
+		}, opts);
 	})();
 
 	// map & address_info & bookmark box fixer
@@ -142,5 +174,4 @@ $(function() {
 			maxHeight: $(window).height() * 0.8 + 'px'
 		});
 	});
-
 });
