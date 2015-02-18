@@ -60,11 +60,11 @@ a {
 	height: 100%;
 }
 
-#map_canvas {
+#map_google {
 	width: 100%;
 }
 
-#map_leaflet {
+#map_osm {
 	/*width: 100%;*/
 	height: 100%;
 }

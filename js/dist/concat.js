@@ -12232,95 +12232,6 @@ return jQuery;
 
 }));
 
-;(function() {
-	this.prototype.get2MeshCode = function() {
-		var lat_m1 = Math.floor(this.lat() / 2 * 3 + 90 / 2 * 3);
-		var lng_m1 = Math.floor(this.lng() + 180);
-		var lat_m2 = lat_m1 * 10 + Math.floor(((this.lat() / 2 * 3 + 90 / 2 * 3) - lat_m1) * 8);
-		var lng_m2 = lng_m1 * 10 + Math.floor(((this.lng() + 180) - lng_m1) * 8);
-
-		var strlat_m1 = lat_m1.toString();
-		var strlng_m1 = lng_m1.toString();
-		var tmpl, i;
-		tmpl = strlat_m1.length;
-		for (i = 0; i < 3 - tmpl; i++) {
-			strlat_m1 = '0' + strlat_m1;
-		}
-		tmpl = strlng_m1.length;
-		for (i = 0; i < 3 - tmpl; i++) {
-			strlng_m1 = '0' + strlng_m1;
-		}
-		var m2str = strlat_m1 + strlng_m1 + lat_m2 % 10 + '' + lng_m2 % 10;
-		return m2str;
-	};
-
-	var myfloor = function(val, n) {
-		var s = Math.pow(10, n);
-		return Math.floor(val * s) / s;
-	};
-
-	var getDMS = function(d) {
-		var tmp = d;
-		var nD = Math.floor(d);
-		tmp = (tmp - nD) * 60;
-		var nM = Math.floor(tmp);
-		tmp = (tmp - nM) * 60;
-		var nS = tmp;
-
-		return [nD, nM, myfloor(nS, 3)];
-	};
-
-	var limitLngRange = function(v) {
-		var d = (v > 0) ? -1 : 1;
-		while (Math.abs(v) > 180) {
-			v += 360 * d;
-		}
-		return v;
-	};
-
-	this.prototype.getLatLonStr = function() {
-		var lat = this.lat();
-		var lng = limitLngRange(this.lng());
-
-		var nsstr = (lat < 0) ? 'S' : 'N';
-		lat = Math.abs(lat);
-		var ewstr = (lng < 0) ? 'W' : 'E';
-		lng = Math.abs(lng);
-
-		var lat_array = getDMS(lat);
-		var lng_array = getDMS(lng);
-
-		var latstr = nsstr + ' ' + lat_array[0] + ' ' + lat_array[1] + ' ' + lat_array[2];
-		var lngstr = ewstr + ' ' + lng_array[0] + ' ' + lng_array[1] + ' ' + lng_array[2];
-
-		var tmp_array = lat_array[2].toString().split('.');
-		var latstrK = nsstr + ' ' + lat_array[0] + ' ' + lat_array[1];
-		for (i = 0; i < tmp_array.length; i++) {
-			latstrK += ' ' + tmp_array[i];
-		}
-
-		tmp_array = lng_array[2].toString().split('.');
-		var lngstrK = ewstr + ' ' + lng_array[0] + ' ' + lng_array[1];
-		for (var i = 0; i < tmp_array.length; i++) {
-			lngstrK += ' ' + tmp_array[i];
-		}
-		var m2str = latstrK + ' ' + lngstrK;
-		return m2str;
-	};
-
-	var get256s = function(deg) {
-		return Math.round(deg * 3600 * 256);
-	};
-
-	this.prototype.getLat256s = function() {
-		return get256s(this.lat());
-	};
-
-	this.prototype.getLng256s = function() {
-		return get256s(this.lng());
-	};
-
-}).call(google.maps.LatLng);
 /*
  Color animation 20120928
  http://www.bitstorm.org/jquery/color-animation/
@@ -12604,6 +12515,126 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 }).call(this);
 ;(function() {
 	this.Gx = this.Gx || {};
+	this.Gx.LatLng = (function() {
+		var c = function(lat, lng) {
+			if (lat instanceof google.maps.LatLng || lat instanceof L.LatLng) {
+				this.set(lat);
+			} else {
+				this.lat = lat;
+				this.lng = lng;
+			}
+		};
+		c.prototype = {
+			set: function(ll) {
+				this.lat = (typeof ll.lat === 'function') ? ll.lat() : ll.lat;
+				this.lng = (typeof ll.lng === 'function') ? ll.lng() : ll.lng;
+			},
+			getGoogle: function() {
+				return new google.maps.LatLng(this.lat, this.lng);
+			},
+			getLeaflet: function() {
+				return L.latLng(this.lat, this.lng);
+			}
+		};
+		return c;
+	})();
+	// alias
+	this.Gx.latLng = function(lat, lng) {
+		return new Gx.LatLng(lat, lng);
+	};
+}).call(this);
+
+;(function() {
+	this.prototype.get2MeshCode = function() {
+		var lat_m1 = Math.floor(this.lat / 2 * 3 + 90 / 2 * 3);
+		var lng_m1 = Math.floor(this.lng + 180);
+		var lat_m2 = lat_m1 * 10 + Math.floor(((this.lat / 2 * 3 + 90 / 2 * 3) - lat_m1) * 8);
+		var lng_m2 = lng_m1 * 10 + Math.floor(((this.lng + 180) - lng_m1) * 8);
+
+		var strlat_m1 = lat_m1.toString();
+		var strlng_m1 = lng_m1.toString();
+		var tmpl, i;
+		tmpl = strlat_m1.length;
+		for (i = 0; i < 3 - tmpl; i++) {
+			strlat_m1 = '0' + strlat_m1;
+		}
+		tmpl = strlng_m1.length;
+		for (i = 0; i < 3 - tmpl; i++) {
+			strlng_m1 = '0' + strlng_m1;
+		}
+		var m2str = strlat_m1 + strlng_m1 + lat_m2 % 10 + '' + lng_m2 % 10;
+		return m2str;
+	};
+
+	var myfloor = function(val, n) {
+		var s = Math.pow(10, n);
+		return Math.floor(val * s) / s;
+	};
+
+	var getDMS = function(d) {
+		var tmp = d;
+		var nD = Math.floor(d);
+		tmp = (tmp - nD) * 60;
+		var nM = Math.floor(tmp);
+		tmp = (tmp - nM) * 60;
+		var nS = tmp;
+
+		return [nD, nM, myfloor(nS, 3)];
+	};
+
+	var limitLngRange = function(v) {
+		var d = (v > 0) ? -1 : 1;
+		while (Math.abs(v) > 180) {
+			v += 360 * d;
+		}
+		return v;
+	};
+
+	this.prototype.getLatLonStr = function() {
+		var lat = this.lat;
+		var lng = limitLngRange(this.lng);
+
+		var nsstr = (lat < 0) ? 'S' : 'N';
+		lat = Math.abs(lat);
+		var ewstr = (lng < 0) ? 'W' : 'E';
+		lng = Math.abs(lng);
+
+		var lat_array = getDMS(lat);
+		var lng_array = getDMS(lng);
+
+		var latstr = nsstr + ' ' + lat_array[0] + ' ' + lat_array[1] + ' ' + lat_array[2];
+		var lngstr = ewstr + ' ' + lng_array[0] + ' ' + lng_array[1] + ' ' + lng_array[2];
+
+		var tmp_array = lat_array[2].toString().split('.');
+		var latstrK = nsstr + ' ' + lat_array[0] + ' ' + lat_array[1];
+		for (i = 0; i < tmp_array.length; i++) {
+			latstrK += ' ' + tmp_array[i];
+		}
+
+		tmp_array = lng_array[2].toString().split('.');
+		var lngstrK = ewstr + ' ' + lng_array[0] + ' ' + lng_array[1];
+		for (var i = 0; i < tmp_array.length; i++) {
+			lngstrK += ' ' + tmp_array[i];
+		}
+		var m2str = latstrK + ' ' + lngstrK;
+		return m2str;
+	};
+
+	var get256s = function(deg) {
+		return Math.round(deg * 3600 * 256);
+	};
+
+	this.prototype.getLat256s = function() {
+		return get256s(this.lat);
+	};
+
+	this.prototype.getLng256s = function() {
+		return get256s(this.lng);
+	};
+
+}).call(Gx.LatLng);
+;(function() {
+	this.Gx = this.Gx || {};
 	this.Gx.Searcher = (function() {
 		var c = function(app) {
 			this.app = app;
@@ -12613,7 +12644,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			search: function(key) {
 				var coord = this.getLatLngFromString(key);
 				if (coord.OK) {
-					key = new google.maps.LatLng(coord.lat, coord.lng);
+					key = Gx.latLng(coord.lat, coord.lng);
 					this.app.render({
 						centerPos: key,
 						markerPos: key
@@ -12623,7 +12654,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				this.geocode(key, _.bind(function(results) {
 					var latLng;
 					if (results[0] && results[0].geometry) {
-						latLng = results[0].geometry.location;
+						latLng = Gx.latLng(results[0].geometry.location);
 					}
 					if (!coord.OK && latLng) {
 						this.app.render({
@@ -12639,8 +12670,8 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			},
 			geocode: function(key, callback) {
 				var q = {};
-				if (key instanceof google.maps.LatLng) {
-					q.latLng = key;
+				if (key instanceof Gx.LatLng) {
+					q.latLng = key.getGoogle();
 				} else {
 					q.address = key;
 				}
@@ -12659,9 +12690,9 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 					callback(results);
 				});
 			},
-			getLatLngFromString: function(latlng) {
-				var translated, tmp1 = latlng.replace('北緯', 'N').replace('南緯', 'S').replace('西経', 'W').replace('東経', 'E').trim(),
-					tmp2 = latlng.replace(/\.|,|\'/g, ' ').replace(/"/g, '').replace('N', 'N ').replace('S', 'S ').replace('E', 'E ').replace('W', 'W ');
+			getLatLngFromString: function(llStr) {
+				var translated, tmp1 = llStr.replace('北緯', 'N').replace('南緯', 'S').replace('西経', 'W').replace('東経', 'E').trim(),
+					tmp2 = llStr.replace(/\.|,|\'/g, ' ').replace(/"/g, '').replace('N', 'N ').replace('S', 'S ').replace('E', 'E ').replace('W', 'W ');
 				var tmp2idx = tmp2.search(/N|S/);
 				tmp2 = tmp2.substr(tmp2idx) + '00 ' + tmp2.substr(0, tmp2idx - 1) + '00';
 				if (tmp1.match(/(N|S)(\s\d{1,3}){4}\s(E|W)(\s\d{1,3}){3,4}/)) {
@@ -13005,7 +13036,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			if (this.removeFlg) {
 				return;
 			}
-			app.jump(new google.maps.LatLng(this.model.get('lat'), this.model.get('lng')), true);
+			app.jump(Gx.latLng(this.model.get('lat'), this.model.get('lng')), true);
 		},
 		onSelect: function() {
 			this.$el.addClass('bkm_li_hover');
@@ -13038,34 +13069,33 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				collection: new Gx.AddressCollection()
 			});
 		},
-		refreshBounds: function(map) {
-			var c = map.getCenter();
+		refreshBounds: function(centerLL, zoom) {
 			var r = Gx.Utils.round;
 			this.centerInfoView.model.set({
-				meshcode: c.get2MeshCode(),
-				latLngStr: c.getLatLonStr(),
-				lat: r(c.lat(), 7),
-				lng: r(c.lng(), 7),
-				lat256s: c.getLat256s(),
-				lng256s: c.getLng256s(),
-				zoom: map.getZoom()
+				meshcode: centerLL.get2MeshCode(),
+				latLngStr: centerLL.getLatLonStr(),
+				lat: r(centerLL.lat, 7),
+				lng: r(centerLL.lng, 7),
+				lat256s: centerLL.getLat256s(),
+				lng256s: centerLL.getLng256s(),
+				zoom: zoom
 			});
 			this.clickedPointView.model.set({
-				zoom: map.getZoom()
+				zoom: zoom
 			});
 		},
 		setGeocodeResult: function(results) {
 			var latLng;
 			var r = Gx.Utils.round;
 			if (results[0] && results[0].geometry) {
-				latLng = results[0].geometry.location;
+				latLng = Gx.latLng(results[0].geometry.location);
 			}
 			if (latLng) {
 				this.clickedPointView.model.set({
 					meshcode: latLng.get2MeshCode(),
 					latLngStr: latLng.getLatLonStr(),
-					lat: r(latLng.lat(), 7),
-					lng: r(latLng.lng(), 7),
+					lat: r(latLng.lat, 7),
+					lng: r(latLng.lng, 7),
 					lat256s: latLng.getLat256s(),
 					lng256s: latLng.getLng256s()
 				});
@@ -13159,6 +13189,9 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				type: this.type
 			});
 		},
+		getCenter: function() {
+			return Gx.latLng(this.map.getCenter());
+		},
 		getZoom: function() {
 			return this.map.getZoom();
 		},
@@ -13174,6 +13207,20 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 		},
 		toggle: function() {
 			this.$el.toggle();
+		},
+		isVisible: function() {
+			return this.$el.is(':visible');
+		},
+		updateQyeryString: function() {
+			if (!Gx.router || !this.isVisible()) {
+				return;
+			}
+			var c = this.getCenter();
+			var queries = [c.lat, c.lng, this.getZoom()].map(function(v) {
+				return Gx.Utils.round(+v, 7);
+			});
+			queries.push(this.type);
+			Gx.router.navigate(queries.join(','), false);
 		}
 	});
 }).call(this);
@@ -13199,86 +13246,91 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			};
 			this.map = new google.maps.Map(this.$el.get(0), mapOpts);
 			this.posMarker = null;
+			this.setListeners();
+		},
+		setListeners: function() {
+			var map = this.map;
+			google.maps.event.addListener(map, 'click', function(me) {
+				app.jump(Gx.latLng(me.latLng));
+			});
+			google.maps.event.addListener(map, 'bounds_changed', _.bind(function() {
+				app.infoView.refreshBounds(this.getCenter(), this.getZoom());
+			}, this));
+			google.maps.event.addListener(map, 'idle', _.bind(this.updateQyeryString, this));
 		},
 		clearMarker: function() {
 			if (this.posMarker) {
 				this.posMarker.setMap(null);
 			}
 		},
-		createMarker: function(lat, lng) {
+		createMarker: function(latLng) {
 			this.clearMarker();
 			this.posMarker = new google.maps.Marker({
 				map: this.map,
-				position: new google.maps.LatLng(lat, lng)
+				position: latLng.getGoogle()
 			});
 			this.posMarker.addListener('click', _.bind(function(me) {
-				this.setCenter(me.latLng.lat(), me.latLng.lng());
+				this.setCenter(Gx.latLng(me.latLng));
 			}, this));
 		},
-		getCenter: function() {
-			var c = this.map.getCenter();
-			return {
-				lat: c.lat(),
-				lng: c.lng()
-			};
+		setCenter: function(latLng) {
+			this.map.setCenter(latLng.getGoogle());
 		},
-		setCenter: function(lat, lng) {
-			this.map.setCenter(new google.maps.LatLng(lat, lng));
-		},
-		saveState: function() {
-			var center = this.map.getCenter();
-			Gx.Utils.localStorageWrapper.data(Gx.lastStateKey, {
-				lat: center.lat(),
-				lng: center.lng(),
-				zoom: this.map.getZoom()
+		fix: function() {
+			this.$el.css({
+				height: $(window).height() + 'px'
 			});
+			google.maps.event.trigger(this.map, 'resize');
 		}
 	});
 }).call(this);
 ;(function() {
 	this.Gx.MapViewLeaflet = this.Gx.MapView.extend({
 		initialize: function(options) {
-			this.type = 'l';
+			this.type = options.type || 'o';
 			var init = options.lastState;
 			var latLng = L.latLng(init.lat, init.lng);
 			this.map = L.map(this.$el.attr('id')).setView(latLng, init.zoom);
-			L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-				attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-				maxZoom: 18
+			L.tileLayer(options.tileUrl, {
+				attribution: options.attribution,
+				maxZoom: 21
 			}).addTo(this.map);
 			L.control.scale().addTo(this.map);
 			this.posMarker = null;
+			this.setListeners();
+		},
+		setListeners: function() {
+			var map = this.map;
+			map.on('click', function(e) {
+				app.jump(Gx.latLng(e.latlng));
+			});
+			map.on('drag', _.bind(function() {
+				app.infoView.refreshBounds(this.getCenter(), this.getZoom());
+			}, this));
+			map.on('moveend dragend zoomend', _.bind(this.updateQyeryString, this));
 		},
 		clearMarker: function() {
 			if (this.posMarker) {
 				this.map.removeLayer(this.posMarker);
 			}
 		},
-		createMarker: function(lat, lng) {
+		createMarker: function(latLng) {
 			this.clearMarker();
-			this.posMarker = L.marker(lat, lng);
+			this.posMarker = L.marker(latLng.getLeaflet());
 			this.posMarker.addTo(this.map);
 			this.posMarker.on('click', _.bind(function(me) {
-				this.setCenter(me.latlng);
+				this.setCenter(Gx.latLng(me.latlng));
 			}, this));
 		},
-		getCenter: function() {
-			var c = this.map.getCenter();
-			return {
-				lat: c.lat,
-				lng: c.lng
-			};
+		setCenter: function(latLng) {
+			this.map.panTo(latLng.getLeaflet());
 		},
-		setCenter: function(lat, lng) {
-			this.map.panTo(L.latLng(lat, lng));
-		},
-		saveState: function() {
-			var center = this.map.getCenter();
-			Gx.Utils.localStorageWrapper.data(Gx.lastStateKey, {
-				lat: center.lat,
-				lng: center.lng,
-				zoom: this.map.getZoom()
+		fix: function() {
+			this.$el.css({
+				height: $(window).height() + 'px',
+				width: $(window).width() + 'px'
 			});
+			this.map.invalidateSize();
 		}
 	});
 }).call(this);
@@ -13328,8 +13380,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 	});
 	this.Gx.AddressCollection = Backbone.Collection.extend();
 }).call(this);
-;
-(function() {
+;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.lastStateKey = 'lastState_GeoExplorer';
 	this.Gx.bookmarkKey = 'bookmarks_GeoExplorer';
@@ -13345,22 +13396,25 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			lastState.type = lastState.type || 'g';
 			this.mapViews = [
 				new Gx.MapViewGoogle({
-					el: '#map_canvas',
+					el: '#map_google',
 					lastState: lastState
 				}),
 				new Gx.MapViewLeaflet({
-					el: '#map_leaflet',
-					lastState: lastState
+					el: '#map_osm',
+					lastState: lastState,
+					type: 'o',
+					tileUrl: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
+					attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="http://mapbox.com">Mapbox</a>'
 				})
 			];
-			this.toggleMap(lastState.type);
-
 			this.searcher = new Gx.Searcher(this);
 			this.searchView = new Gx.SearchView(this.searcher);
 			this.infoView = new Gx.InfoView();
 			this.bookmarkView = new Gx.BookmarkView();
+			this.toggleMap(lastState.type);
 		},
 		jump: function(latLng, centering) {
+			// latLng: Gx.LatLng
 			this.render({
 				centerPos: (centering ? latLng : null),
 				markerPos: latLng
@@ -13392,14 +13446,38 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			return this;
 		},
 		toggleMap: function(type) {
-			this.mapViews.forEach(_.bind(function(view) {
+			var prev = this.mapView;
+			this.mapViews.forEach(function(view) {
 				if (type) {
 					view.show(view.type === type);
-					this.mapView = view;
 				} else {
 					view.toggle();
 				}
-			}, this));
+			});
+			this.mapView = this.mapViews.filter(function(view) {
+				return view.isVisible();
+			})[0] || this.mapViews[0];
+			if (prev) {
+				this.mapView.setCenter(prev.getCenter());
+				this.mapView.setZoom(prev.getZoom());
+			}
+			this.mapView.updateQyeryString();
+			this.jump(this.mapView.getCenter(), true);
+			setTimeout(this.fixer(), 100);
+		},
+		fixer: function() {
+			this.mapView.fix();
+			var info = this.infoView.$el.height(),
+				centerInfo = this.infoView.centerInfoView.$el.height() || 80,
+				clicked = this.infoView.clickedPointView.$el.height() || 80,
+				h2 = this.infoView.$el.children('h2').outerHeight(),
+				h = info - (centerInfo + clicked + h2 * 2) - 15;
+			this.infoView.addressResultsView.$el.css({
+				maxHeight: h + 'px'
+			});
+			this.bookmarkView.bookmarkListView.$el.css({
+				maxHeight: $(window).height() * 0.8 + 'px'
+			});
 		}
 	});
 
@@ -13412,62 +13490,43 @@ $(function() {
 	// Start Router
 	var Router = Backbone.Router.extend({
 		routes: {
-			'(:coord)': 'jump'
+			'(:states)': 'jump'
 		},
-		jump: function(coord) {
-			if (!coord || !coord.match(/^(-{0,1}\d+\.{0,1}\d+,){2}\d+$/g)) {
+		jump: function(states) {
+			if (!states || !states.match(/^(-{0,1}\d+\.{0,1}\d+,){2}\d+,[A-z]$/g)) {
 				return;
 			}
-			var sp = coord.split(',').map(function(v) {
+			var sp = states.split(',');
+			var coords = sp.slice(0, 3).map(function(v) {
 				return +v;
 			});
-			app.jump(new google.maps.LatLng(sp[0], sp[1]), true).render({
-				zoom: sp[2]
+			app.toggleMap(sp[3]);
+			app.jump(Gx.latLng(coords[0], coords[1]), true).render({
+				zoom: coords[2]
 			});
 		}
 	});
 	Gx.router = new Router();
 	Backbone.history.start();
 
-	// Set listeners
-	(function() {
-		// Save current state to localStorage on closing App
-		window.onbeforeunload = function() {
-			app.mapView.saveState();
-			app.bookmarkView.save();
-		};
-		var map = app.mapView.map;
-		google.maps.event.addListener(map, 'click', function(me) {
-			app.jump(me.latLng);
-		});
-		google.maps.event.addListener(map, 'bounds_changed', function() {
-			app.infoView.refreshBounds(map);
-		});
-		google.maps.event.addListener(map, 'idle', function() {
-			var m = app.mapView.map;
-			var c = m.getCenter();
-			var query = [c.lat(), c.lng(), m.getZoom()].map(function(v) {
-				return Gx.Utils.round(+v, 7);
-			}).join(',');
-			Gx.router.navigate(query, false);
-		});
-		app.jump(map.getCenter());
-	})();
+	// Save current state to localStorage on closing App
+	window.onbeforeunload = function() {
+		app.mapView.saveState();
+		app.bookmarkView.save();
+	};
 
 	// Set short-cut keys
 	(function() {
 		var opts = {
-				'type': 'keydown',
-				'propagate': true,
-				'target': document
-			},
-			map = app.mapView.map;
-
+			'type': 'keydown',
+			'propagate': true,
+			'target': document
+		};
 		shortcut.add('Shift+PageUp', function() {
-			map.setZoom(map.getZoom() + 1);
+			app.mapView.setZoom(app.mapView.getZoom() + 1);
 		}, opts);
 		shortcut.add('Shift+PageDown', function() {
-			map.setZoom(map.getZoom() - 1);
+			app.mapView.setZoom(app.mapView.getZoom() - 1);
 		}, opts);
 		shortcut.add('Ctrl+Enter', function() {
 			app.infoView.toggle();
@@ -13488,21 +13547,6 @@ $(function() {
 	(function(f) {
 		f();
 		$(window).resize(f);
-	})(function() {
-		$('#map_canvas').css({
-			height: $(window).height() + 'px'
-		});
-		var info = $('#informations').height(),
-			centerInfo = $('#center_info').height() || 80,
-			clicked = $('#clicked_point').height() || 80,
-			h2 = $('#informations h2').outerHeight(),
-			h = info - (centerInfo + clicked + h2 * 2) - 15;
-		$('#address_info').css({
-			maxHeight: h + 'px'
-		});
-		$('#bookmark').css({
-			maxHeight: $(window).height() * 0.8 + 'px'
-		});
-	});
+	})(_.bind(app.fixer, app));
 });
 }).call(this);

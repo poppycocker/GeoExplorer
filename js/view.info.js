@@ -15,34 +15,33 @@
 				collection: new Gx.AddressCollection()
 			});
 		},
-		refreshBounds: function(map) {
-			var c = map.getCenter();
+		refreshBounds: function(centerLL, zoom) {
 			var r = Gx.Utils.round;
 			this.centerInfoView.model.set({
-				meshcode: c.get2MeshCode(),
-				latLngStr: c.getLatLonStr(),
-				lat: r(c.lat(), 7),
-				lng: r(c.lng(), 7),
-				lat256s: c.getLat256s(),
-				lng256s: c.getLng256s(),
-				zoom: map.getZoom()
+				meshcode: centerLL.get2MeshCode(),
+				latLngStr: centerLL.getLatLonStr(),
+				lat: r(centerLL.lat, 7),
+				lng: r(centerLL.lng, 7),
+				lat256s: centerLL.getLat256s(),
+				lng256s: centerLL.getLng256s(),
+				zoom: zoom
 			});
 			this.clickedPointView.model.set({
-				zoom: map.getZoom()
+				zoom: zoom
 			});
 		},
 		setGeocodeResult: function(results) {
 			var latLng;
 			var r = Gx.Utils.round;
 			if (results[0] && results[0].geometry) {
-				latLng = results[0].geometry.location;
+				latLng = Gx.latLng(results[0].geometry.location);
 			}
 			if (latLng) {
 				this.clickedPointView.model.set({
 					meshcode: latLng.get2MeshCode(),
 					latLngStr: latLng.getLatLonStr(),
-					lat: r(latLng.lat(), 7),
-					lng: r(latLng.lng(), 7),
+					lat: r(latLng.lat, 7),
+					lng: r(latLng.lng, 7),
 					lat256s: latLng.getLat256s(),
 					lng256s: latLng.getLng256s()
 				});

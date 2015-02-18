@@ -1,9 +1,40 @@
 ;(function() {
+	this.Gx = this.Gx || {};
+	this.Gx.LatLng = (function() {
+		var c = function(lat, lng) {
+			if (lat instanceof google.maps.LatLng || lat instanceof L.LatLng) {
+				this.set(lat);
+			} else {
+				this.lat = lat;
+				this.lng = lng;
+			}
+		};
+		c.prototype = {
+			set: function(ll) {
+				this.lat = (typeof ll.lat === 'function') ? ll.lat() : ll.lat;
+				this.lng = (typeof ll.lng === 'function') ? ll.lng() : ll.lng;
+			},
+			getGoogle: function() {
+				return new google.maps.LatLng(this.lat, this.lng);
+			},
+			getLeaflet: function() {
+				return L.latLng(this.lat, this.lng);
+			}
+		};
+		return c;
+	})();
+	// alias
+	this.Gx.latLng = function(lat, lng) {
+		return new Gx.LatLng(lat, lng);
+	};
+}).call(this);
+
+;(function() {
 	this.prototype.get2MeshCode = function() {
-		var lat_m1 = Math.floor(this.lat() / 2 * 3 + 90 / 2 * 3);
-		var lng_m1 = Math.floor(this.lng() + 180);
-		var lat_m2 = lat_m1 * 10 + Math.floor(((this.lat() / 2 * 3 + 90 / 2 * 3) - lat_m1) * 8);
-		var lng_m2 = lng_m1 * 10 + Math.floor(((this.lng() + 180) - lng_m1) * 8);
+		var lat_m1 = Math.floor(this.lat / 2 * 3 + 90 / 2 * 3);
+		var lng_m1 = Math.floor(this.lng + 180);
+		var lat_m2 = lat_m1 * 10 + Math.floor(((this.lat / 2 * 3 + 90 / 2 * 3) - lat_m1) * 8);
+		var lng_m2 = lng_m1 * 10 + Math.floor(((this.lng + 180) - lng_m1) * 8);
 
 		var strlat_m1 = lat_m1.toString();
 		var strlng_m1 = lng_m1.toString();
@@ -45,8 +76,8 @@
 	};
 
 	this.prototype.getLatLonStr = function() {
-		var lat = this.lat();
-		var lng = limitLngRange(this.lng());
+		var lat = this.lat;
+		var lng = limitLngRange(this.lng);
 
 		var nsstr = (lat < 0) ? 'S' : 'N';
 		lat = Math.abs(lat);
@@ -79,11 +110,11 @@
 	};
 
 	this.prototype.getLat256s = function() {
-		return get256s(this.lat());
+		return get256s(this.lat);
 	};
 
 	this.prototype.getLng256s = function() {
-		return get256s(this.lng());
+		return get256s(this.lng);
 	};
 
-}).call(google.maps.LatLng);
+}).call(Gx.LatLng);

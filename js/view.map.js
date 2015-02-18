@@ -10,6 +10,9 @@
 				type: this.type
 			});
 		},
+		getCenter: function() {
+			return Gx.latLng(this.map.getCenter());
+		},
 		getZoom: function() {
 			return this.map.getZoom();
 		},
@@ -25,6 +28,20 @@
 		},
 		toggle: function() {
 			this.$el.toggle();
+		},
+		isVisible: function() {
+			return this.$el.is(':visible');
+		},
+		updateQyeryString: function() {
+			if (!Gx.router || !this.isVisible()) {
+				return;
+			}
+			var c = this.getCenter();
+			var queries = [c.lat, c.lng, this.getZoom()].map(function(v) {
+				return Gx.Utils.round(+v, 7);
+			});
+			queries.push(this.type);
+			Gx.router.navigate(queries.join(','), false);
 		}
 	});
 }).call(this);

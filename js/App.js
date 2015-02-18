@@ -1,5 +1,4 @@
-;
-(function() {
+;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.lastStateKey = 'lastState_GeoExplorer';
 	this.Gx.bookmarkKey = 'bookmarks_GeoExplorer';
@@ -15,22 +14,25 @@
 			lastState.type = lastState.type || 'g';
 			this.mapViews = [
 				new Gx.MapViewGoogle({
-					el: '#map_canvas',
+					el: '#map_google',
 					lastState: lastState
 				}),
 				new Gx.MapViewLeaflet({
-					el: '#map_leaflet',
-					lastState: lastState
+					el: '#map_osm',
+					lastState: lastState,
+					type: 'o',
+					tileUrl: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
+					attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="http://mapbox.com">Mapbox</a>'
 				})
 			];
-			this.toggleMap(lastState.type);
-
 			this.searcher = new Gx.Searcher(this);
 			this.searchView = new Gx.SearchView(this.searcher);
 			this.infoView = new Gx.InfoView();
 			this.bookmarkView = new Gx.BookmarkView();
+			this.toggleMap(lastState.type);
 		},
 		jump: function(latLng, centering) {
+			// latLng: Gx.LatLng
 			this.render({
 				centerPos: (centering ? latLng : null),
 				markerPos: latLng
@@ -62,14 +64,38 @@
 			return this;
 		},
 		toggleMap: function(type) {
-			this.mapViews.forEach(_.bind(function(view) {
+			var prev = this.mapView;
+			this.mapViews.forEach(function(view) {
 				if (type) {
 					view.show(view.type === type);
-					this.mapView = view;
 				} else {
 					view.toggle();
 				}
-			}, this));
+			});
+			this.mapView = this.mapViews.filter(function(view) {
+				return view.isVisible();
+			})[0] || this.mapViews[0];
+			if (prev) {
+				this.mapView.setCenter(prev.getCenter());
+				this.mapView.setZoom(prev.getZoom());
+			}
+			this.mapView.updateQyeryString();
+			this.jump(this.mapView.getCenter(), true);
+			setTimeout(this.fixer(), 100);
+		},
+		fixer: function() {
+			this.mapView.fix();
+			var info = this.infoView.$el.height(),
+				centerInfo = this.infoView.centerInfoView.$el.height() || 80,
+				clicked = this.infoView.clickedPointView.$el.height() || 80,
+				h2 = this.infoView.$el.children('h2').outerHeight(),
+				h = info - (centerInfo + clicked + h2 * 2) - 15;
+			this.infoView.addressResultsView.$el.css({
+				maxHeight: h + 'px'
+			});
+			this.bookmarkView.bookmarkListView.$el.css({
+				maxHeight: $(window).height() * 0.8 + 'px'
+			});
 		}
 	});
 
@@ -82,62 +108,43 @@ $(function() {
 	// Start Router
 	var Router = Backbone.Router.extend({
 		routes: {
-			'(:coord)': 'jump'
+			'(:states)': 'jump'
 		},
-		jump: function(coord) {
-			if (!coord || !coord.match(/^(-{0,1}\d+\.{0,1}\d+,){2}\d+$/g)) {
+		jump: function(states) {
+			if (!states || !states.match(/^(-{0,1}\d+\.{0,1}\d+,){2}\d+,[A-z]$/g)) {
 				return;
 			}
-			var sp = coord.split(',').map(function(v) {
+			var sp = states.split(',');
+			var coords = sp.slice(0, 3).map(function(v) {
 				return +v;
 			});
-			app.jump(new google.maps.LatLng(sp[0], sp[1]), true).render({
-				zoom: sp[2]
+			app.toggleMap(sp[3]);
+			app.jump(Gx.latLng(coords[0], coords[1]), true).render({
+				zoom: coords[2]
 			});
 		}
 	});
 	Gx.router = new Router();
 	Backbone.history.start();
 
-	// Set listeners
-	(function() {
-		// Save current state to localStorage on closing App
-		window.onbeforeunload = function() {
-			app.mapView.saveState();
-			app.bookmarkView.save();
-		};
-		var map = app.mapView.map;
-		google.maps.event.addListener(map, 'click', function(me) {
-			app.jump(me.latLng);
-		});
-		google.maps.event.addListener(map, 'bounds_changed', function() {
-			app.infoView.refreshBounds(map);
-		});
-		google.maps.event.addListener(map, 'idle', function() {
-			var m = app.mapView.map;
-			var c = m.getCenter();
-			var query = [c.lat(), c.lng(), m.getZoom()].map(function(v) {
-				return Gx.Utils.round(+v, 7);
-			}).join(',');
-			Gx.router.navigate(query, false);
-		});
-		app.jump(map.getCenter());
-	})();
+	// Save current state to localStorage on closing App
+	window.onbeforeunload = function() {
+		app.mapView.saveState();
+		app.bookmarkView.save();
+	};
 
 	// Set short-cut keys
 	(function() {
 		var opts = {
-				'type': 'keydown',
-				'propagate': true,
-				'target': document
-			},
-			map = app.mapView.map;
-
+			'type': 'keydown',
+			'propagate': true,
+			'target': document
+		};
 		shortcut.add('Shift+PageUp', function() {
-			map.setZoom(map.getZoom() + 1);
+			app.mapView.setZoom(app.mapView.getZoom() + 1);
 		}, opts);
 		shortcut.add('Shift+PageDown', function() {
-			map.setZoom(map.getZoom() - 1);
+			app.mapView.setZoom(app.mapView.getZoom() - 1);
 		}, opts);
 		shortcut.add('Ctrl+Enter', function() {
 			app.infoView.toggle();
@@ -158,20 +165,5 @@ $(function() {
 	(function(f) {
 		f();
 		$(window).resize(f);
-	})(function() {
-		$('#map_canvas').css({
-			height: $(window).height() + 'px'
-		});
-		var info = $('#informations').height(),
-			centerInfo = $('#center_info').height() || 80,
-			clicked = $('#clicked_point').height() || 80,
-			h2 = $('#informations h2').outerHeight(),
-			h = info - (centerInfo + clicked + h2 * 2) - 15;
-		$('#address_info').css({
-			maxHeight: h + 'px'
-		});
-		$('#bookmark').css({
-			maxHeight: $(window).height() * 0.8 + 'px'
-		});
-	});
+	})(_.bind(app.fixer, app));
 });
