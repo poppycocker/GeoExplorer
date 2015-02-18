@@ -2,6 +2,20 @@ module.exports = function(grunt) {
     var pkg = grunt.file.readJSON('package.json');
     // http://havelog.ayumusato.com/develop/javascript/e580-own_concat_pattern.html
     grunt.initConfig({
+        copy: {
+            css_leaflet: {
+                expand: true,
+                cwd: 'bower_components/leaflet/dist/',
+                src: 'leaflet.css',
+                dest: 'css/',
+            },
+            img_leaflet: {
+                expand: true,
+                cwd: 'bower_components/leaflet/dist/images',
+                src: '*',
+                dest: 'images/'
+            }
+        },
         concat: {
             options: {
                 stripBanners: false,
@@ -21,6 +35,7 @@ module.exports = function(grunt) {
                     'bower_components/jquery/dist/jquery.js',
                     'bower_components/underscore/underscore.js',
                     'bower_components/backbone/backbone.js',
+                    'bower_components/leaflet/dist/leaflet-src.js',
                     'js/jquery.animate-colors-min.js',
                     'js/shortcut.js',
                     'js/utils.js',
@@ -60,10 +75,11 @@ module.exports = function(grunt) {
     });
 
     // プラグインのロード・デフォルトタスクの登録
+    grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.registerTask('default', ['concat', 'uglify']);
+    grunt.registerTask('default', ['copy', 'concat', 'uglify']);
 
     // 更新監視は grunt watch でスタート
 };

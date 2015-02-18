@@ -6,6 +6,7 @@
 	this.Gx.AppView = Backbone.View.extend({
 		el: '#wrapper',
 		initialize: function() {
+			L.Icon.Default.imagePath = 'images';
 			// Generate the Map, get last state from localStorage
 			var lastState = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
 			lastState.lat = lastState.lat || 35.5291699;
