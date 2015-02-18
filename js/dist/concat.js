@@ -22249,36 +22249,21 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				collection: new Gx.AddressCollection()
 			});
 		},
-		refreshBounds: function(centerLL, zoom) {
+		refreshBounds: function(mapView) {
+			if (!mapView.isVisible()) {
+				return;
+			}
 			var r = Gx.Utils.round;
-			this.centerInfoView.model.set({
-				meshcode: centerLL.get2MeshCode(),
-				latLngStr: centerLL.getLatLonStr(),
-				lat: r(centerLL.lat, 7),
-				lng: r(centerLL.lng, 7),
-				lat256s: centerLL.getLat256s(),
-				lng256s: centerLL.getLng256s(),
-				zoom: zoom
-			});
-			this.clickedPointView.model.set({
-				zoom: zoom
-			});
+			this.centerInfoView.model.setAttrs(mapView.getCenter(), mapView.getZoom(), mapView.type);
 		},
-		setGeocodeResult: function(results) {
+		setGeocodeResult: function(results, mapType) {
 			var latLng;
 			var r = Gx.Utils.round;
 			if (results[0] && results[0].geometry) {
 				latLng = Gx.latLng(results[0].geometry.location);
 			}
 			if (latLng) {
-				this.clickedPointView.model.set({
-					meshcode: latLng.get2MeshCode(),
-					latLngStr: latLng.getLatLonStr(),
-					lat: r(latLng.lat, 7),
-					lng: r(latLng.lng, 7),
-					lat256s: latLng.getLat256s(),
-					lng256s: latLng.getLng256s()
-				});
+				this.clickedPointView.model.setAttrs(latLng, null, mapType);
 			}
 			// clear all
 			this.addressResultsView.clear();
@@ -22295,10 +22280,20 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 		initialize: function() {
 			_.bindAll(this, 'render');
 			this.model.bind('change', this.render);
-			this.template = _.template($('#tmpl_point_info').html());
+			this.tmplInfo = _.template($('#tmpl_point_info').html());
+			this.tmplGoogle = _.template($('#tmpl_href_google').html());
+			this.tmplOsm = _.template($('#tmpl_href_osm').html());
 		},
 		render: function() {
-			this.$el.html(this.template(this.model.attributes));
+			var attrs = this.model.attributes;
+			var info = this.tmplInfo(attrs);
+			var href = '';
+			if (this.model.isGoogle()) {
+				href = this.tmplGoogle(attrs);
+			} else if (this.model.isOsm()) {
+				href = this.tmplOsm(attrs);
+			}
+			this.$el.html(info + href);
 			$('.llstring').click(function() {
 				$(this).select();
 			});
@@ -22426,7 +22421,6 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			};
 			this.map = new google.maps.Map(this.$el.get(0), mapOpts);
 			this.posMarker = null;
-			this.setListeners();
 		},
 		setListeners: function() {
 			var map = this.map;
@@ -22434,7 +22428,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				app.jump(Gx.latLng(me.latLng));
 			});
 			google.maps.event.addListener(map, 'bounds_changed', _.bind(function() {
-				app.infoView.refreshBounds(this.getCenter(), this.getZoom());
+				app.infoView.refreshBounds(this);
 			}, this));
 			google.maps.event.addListener(map, 'idle', _.bind(this.updateQyeryString, this));
 		},
@@ -22477,7 +22471,6 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			}).addTo(this.map);
 			L.control.scale().addTo(this.map);
 			this.posMarker = null;
-			this.setListeners();
 		},
 		setListeners: function() {
 			var map = this.map;
@@ -22485,7 +22478,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				app.jump(Gx.latLng(e.latlng));
 			});
 			map.on('drag', _.bind(function() {
-				app.infoView.refreshBounds(this.getCenter(), this.getZoom());
+				app.infoView.refreshBounds(this);
 			}, this));
 			map.on('moveend dragend zoomend', _.bind(this.updateQyeryString, this));
 		},
@@ -22542,8 +22535,35 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				lng: 0,
 				lat256s: 0,
 				lng256s: 0,
-				zoom: 18
+				zoom: 18,
+				mapType: 'g'
 			};
+		},
+		setAttrs: function(latLng, zoom, mapType) {
+			// latLng: Gx.LatLng
+			var r = Gx.Utils.round;
+			var attrs = {};
+			if (latLng) {
+				attrs.meshcode = latLng.get2MeshCode();
+				attrs.latLngStr = latLng.getLatLonStr();
+				attrs.lat = r(latLng.lat, 7);
+				attrs.lng = r(latLng.lng, 7);
+				attrs.lat256s = latLng.getLat256s();
+				attrs.lng256s = latLng.getLng256s();
+			}
+			if (zoom) {
+				attrs.zoom = zoom;
+			}
+			if (mapType) {
+				attrs.mapType = mapType;
+			}
+			this.set(attrs);
+		},
+		isGoogle: function() {
+			return this.attributes.mapType === 'g';
+		},
+		isOsm: function() {
+			return this.attributes.mapType === 'o';
 		}
 	});
 }).call(this);
@@ -22593,6 +22613,9 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			this.infoView = new Gx.InfoView();
 			this.bookmarkView = new Gx.BookmarkView();
 			this.toggleMap(lastState.type);
+			this.mapViews.forEach(function(view) {
+				view.setListeners();
+			});
 		},
 		jump: function(latLng, centering) {
 			// latLng: Gx.LatLng
@@ -22616,7 +22639,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				this.mapView.createMarker(params.markerPos);
 			}
 			if (params.geocodeResults) {
-				this.infoView.setGeocodeResult(params.geocodeResults);
+				this.infoView.setGeocodeResult(params.geocodeResults, this.mapView.type);
 			}
 			if (params.bookmarkTitle) {
 				this.bookmarkView.setSearchKey(params.bookmarkTitle);
@@ -22644,6 +22667,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			}
 			this.mapView.updateQyeryString();
 			this.jump(this.mapView.getCenter(), true);
+			this.infoView.refreshBounds(this.mapView);
 			setTimeout(this.fixer(), 100);
 		},
 		fixer: function() {

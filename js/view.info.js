@@ -15,36 +15,21 @@
 				collection: new Gx.AddressCollection()
 			});
 		},
-		refreshBounds: function(centerLL, zoom) {
+		refreshBounds: function(mapView) {
+			if (!mapView.isVisible()) {
+				return;
+			}
 			var r = Gx.Utils.round;
-			this.centerInfoView.model.set({
-				meshcode: centerLL.get2MeshCode(),
-				latLngStr: centerLL.getLatLonStr(),
-				lat: r(centerLL.lat, 7),
-				lng: r(centerLL.lng, 7),
-				lat256s: centerLL.getLat256s(),
-				lng256s: centerLL.getLng256s(),
-				zoom: zoom
-			});
-			this.clickedPointView.model.set({
-				zoom: zoom
-			});
+			this.centerInfoView.model.setAttrs(mapView.getCenter(), mapView.getZoom(), mapView.type);
 		},
-		setGeocodeResult: function(results) {
+		setGeocodeResult: function(results, mapType) {
 			var latLng;
 			var r = Gx.Utils.round;
 			if (results[0] && results[0].geometry) {
 				latLng = Gx.latLng(results[0].geometry.location);
 			}
 			if (latLng) {
-				this.clickedPointView.model.set({
-					meshcode: latLng.get2MeshCode(),
-					latLngStr: latLng.getLatLonStr(),
-					lat: r(latLng.lat, 7),
-					lng: r(latLng.lng, 7),
-					lat256s: latLng.getLat256s(),
-					lng256s: latLng.getLng256s()
-				});
+				this.clickedPointView.model.setAttrs(latLng, null, mapType);
 			}
 			// clear all
 			this.addressResultsView.clear();
@@ -61,10 +46,20 @@
 		initialize: function() {
 			_.bindAll(this, 'render');
 			this.model.bind('change', this.render);
-			this.template = _.template($('#tmpl_point_info').html());
+			this.tmplInfo = _.template($('#tmpl_point_info').html());
+			this.tmplGoogle = _.template($('#tmpl_href_google').html());
+			this.tmplOsm = _.template($('#tmpl_href_osm').html());
 		},
 		render: function() {
-			this.$el.html(this.template(this.model.attributes));
+			var attrs = this.model.attributes;
+			var info = this.tmplInfo(attrs);
+			var href = '';
+			if (this.model.isGoogle()) {
+				href = this.tmplGoogle(attrs);
+			} else if (this.model.isOsm()) {
+				href = this.tmplOsm(attrs);
+			}
+			this.$el.html(info + href);
 			$('.llstring').click(function() {
 				$(this).select();
 			});

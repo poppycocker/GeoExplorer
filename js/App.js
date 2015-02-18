@@ -31,6 +31,9 @@
 			this.infoView = new Gx.InfoView();
 			this.bookmarkView = new Gx.BookmarkView();
 			this.toggleMap(lastState.type);
+			this.mapViews.forEach(function(view) {
+				view.setListeners();
+			});
 		},
 		jump: function(latLng, centering) {
 			// latLng: Gx.LatLng
@@ -54,7 +57,7 @@
 				this.mapView.createMarker(params.markerPos);
 			}
 			if (params.geocodeResults) {
-				this.infoView.setGeocodeResult(params.geocodeResults);
+				this.infoView.setGeocodeResult(params.geocodeResults, this.mapView.type);
 			}
 			if (params.bookmarkTitle) {
 				this.bookmarkView.setSearchKey(params.bookmarkTitle);
@@ -82,6 +85,7 @@
 			}
 			this.mapView.updateQyeryString();
 			this.jump(this.mapView.getCenter(), true);
+			this.infoView.refreshBounds(this.mapView);
 			setTimeout(this.fixer(), 100);
 		},
 		fixer: function() {

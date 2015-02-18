@@ -20,7 +20,6 @@
 			};
 			this.map = new google.maps.Map(this.$el.get(0), mapOpts);
 			this.posMarker = null;
-			this.setListeners();
 		},
 		setListeners: function() {
 			var map = this.map;
@@ -28,7 +27,7 @@
 				app.jump(Gx.latLng(me.latLng));
 			});
 			google.maps.event.addListener(map, 'bounds_changed', _.bind(function() {
-				app.infoView.refreshBounds(this.getCenter(), this.getZoom());
+				app.infoView.refreshBounds(this);
 			}, this));
 			google.maps.event.addListener(map, 'idle', _.bind(this.updateQyeryString, this));
 		},

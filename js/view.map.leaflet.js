@@ -11,7 +11,6 @@
 			}).addTo(this.map);
 			L.control.scale().addTo(this.map);
 			this.posMarker = null;
-			this.setListeners();
 		},
 		setListeners: function() {
 			var map = this.map;
@@ -19,7 +18,7 @@
 				app.jump(Gx.latLng(e.latlng));
 			});
 			map.on('drag', _.bind(function() {
-				app.infoView.refreshBounds(this.getCenter(), this.getZoom());
+				app.infoView.refreshBounds(this);
 			}, this));
 			map.on('moveend dragend zoomend', _.bind(this.updateQyeryString, this));
 		},
