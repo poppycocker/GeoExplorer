@@ -1,7 +1,7 @@
 ;(function() {
 	this.Gx.MapViewGoogle = this.Gx.MapView.extend({
 		initialize: function(options) {
-			this.type = 'g';
+			this.type = Gx.mapTypes.google;
 			var init = options.lastState;
 			var latlng = new google.maps.LatLng(init.lat, init.lng);
 			var mapOpts = {

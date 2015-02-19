@@ -1,7 +1,7 @@
 ;(function() {
 	this.Gx.MapViewLeaflet = this.Gx.MapView.extend({
 		initialize: function(options) {
-			this.type = options.type || 'o';
+			this.type = options.type || Gx.mapTypes.osm;
 			var init = options.lastState;
 			var latLng = L.latLng(init.lat, init.lng);
 			this.map = L.map(this.$el.attr('id')).setView(latLng, init.zoom);

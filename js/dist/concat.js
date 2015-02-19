@@ -21670,6 +21670,16 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 }).call(this);
 ;(function() {
 	this.Gx = this.Gx || {};
+	this.Gx.mapTypes = {
+		google: 'g',
+		osm: 'o'
+	};
+	this.Gx.lastStateKey = 'lastState_GeoExplorer';
+	this.Gx.bookmarkKey = 'bookmarks_GeoExplorer';
+}).call(this);
+
+;(function() {
+	this.Gx = this.Gx || {};
 	this.Gx.Utils = {};
 	this.Gx.Utils.localStorageWrapper = {
 		data: function(key, val) {
@@ -22402,7 +22412,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 ;(function() {
 	this.Gx.MapViewGoogle = this.Gx.MapView.extend({
 		initialize: function(options) {
-			this.type = 'g';
+			this.type = Gx.mapTypes.google;
 			var init = options.lastState;
 			var latlng = new google.maps.LatLng(init.lat, init.lng);
 			var mapOpts = {
@@ -22461,7 +22471,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 ;(function() {
 	this.Gx.MapViewLeaflet = this.Gx.MapView.extend({
 		initialize: function(options) {
-			this.type = options.type || 'o';
+			this.type = options.type || Gx.mapTypes.osm;
 			var init = options.lastState;
 			var latLng = L.latLng(init.lat, init.lng);
 			this.map = L.map(this.$el.attr('id')).setView(latLng, init.zoom);
@@ -22536,7 +22546,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				lat256s: 0,
 				lng256s: 0,
 				zoom: 18,
-				mapType: 'g'
+				mapType: Gx.mapTypes.google
 			};
 		},
 		setAttrs: function(latLng, zoom, mapType) {
@@ -22560,10 +22570,10 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			this.set(attrs);
 		},
 		isGoogle: function() {
-			return this.attributes.mapType === 'g';
+			return this.attributes.mapType === Gx.mapTypes.google;
 		},
 		isOsm: function() {
-			return this.attributes.mapType === 'o';
+			return this.attributes.mapType === Gx.mapTypes.osm;
 		}
 	});
 }).call(this);
@@ -22582,9 +22592,6 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 }).call(this);
 ;(function() {
 	this.Gx = this.Gx || {};
-	this.Gx.lastStateKey = 'lastState_GeoExplorer';
-	this.Gx.bookmarkKey = 'bookmarks_GeoExplorer';
-
 	this.Gx.AppView = Backbone.View.extend({
 		el: '#wrapper',
 		initialize: function() {
@@ -22594,7 +22601,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			lastState.lat = lastState.lat || 35.5291699;
 			lastState.lng = lastState.lng || 139.6958934;
 			lastState.zoom = lastState.zoom || 9;
-			lastState.type = lastState.type || 'g';
+			lastState.type = lastState.type || Gx.mapTypes.google;
 			this.mapViews = [
 				new Gx.MapViewGoogle({
 					el: '#map_google',
@@ -22603,7 +22610,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				new Gx.MapViewLeaflet({
 					el: '#map_osm',
 					lastState: lastState,
-					type: 'o',
+					type: Gx.mapTypes.osm,
 					tileUrl: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
 					attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="http://mapbox.com">Mapbox</a>'
 				})

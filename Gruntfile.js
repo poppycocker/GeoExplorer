@@ -38,6 +38,7 @@ module.exports = function(grunt) {
                     'bower_components/leaflet/dist/leaflet-src.js',
                     'js/jquery.animate-colors-min.js',
                     'js/shortcut.js',
+                    'js/definitions.js',
                     'js/utils.js',
                     'js/latlng.js',
                     'js/searcher.js',

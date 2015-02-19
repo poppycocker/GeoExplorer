@@ -1,8 +1,5 @@
 ;(function() {
 	this.Gx = this.Gx || {};
-	this.Gx.lastStateKey = 'lastState_GeoExplorer';
-	this.Gx.bookmarkKey = 'bookmarks_GeoExplorer';
-
 	this.Gx.AppView = Backbone.View.extend({
 		el: '#wrapper',
 		initialize: function() {
@@ -12,7 +9,7 @@
 			lastState.lat = lastState.lat || 35.5291699;
 			lastState.lng = lastState.lng || 139.6958934;
 			lastState.zoom = lastState.zoom || 9;
-			lastState.type = lastState.type || 'g';
+			lastState.type = lastState.type || Gx.mapTypes.google;
 			this.mapViews = [
 				new Gx.MapViewGoogle({
 					el: '#map_google',
@@ -21,7 +18,7 @@
 				new Gx.MapViewLeaflet({
 					el: '#map_osm',
 					lastState: lastState,
-					type: 'o',
+					type: Gx.mapTypes.osm,
 					tileUrl: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
 					attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="http://mapbox.com">Mapbox</a>'
 				})

@@ -10,7 +10,7 @@
 				lat256s: 0,
 				lng256s: 0,
 				zoom: 18,
-				mapType: 'g'
+				mapType: Gx.mapTypes.google
 			};
 		},
 		setAttrs: function(latLng, zoom, mapType) {
@@ -34,10 +34,10 @@
 			this.set(attrs);
 		},
 		isGoogle: function() {
-			return this.attributes.mapType === 'g';
+			return this.attributes.mapType === Gx.mapTypes.google;
 		},
 		isOsm: function() {
-			return this.attributes.mapType === 'o';
+			return this.attributes.mapType === Gx.mapTypes.osm;
 		}
 	});
 }).call(this);
