@@ -21671,13 +21671,18 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 ;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.mapTypes = {
-		google: 'g',
-		osm: 'o'
+		google: {
+			key: 'g',
+			name: 'GoogleMap'
+		},
+		osm: {
+			key: 'o',
+			name: 'OpenStreetMap'
+		}
 	};
 	this.Gx.lastStateKey = 'lastState_GeoExplorer';
 	this.Gx.bookmarkKey = 'bookmarks_GeoExplorer';
 }).call(this);
-
 ;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.Utils = {};
@@ -21920,9 +21925,9 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 		events: {
 			'keyup': 'onSearch'
 		},
-		initialize: function(searcher) {
+		initialize: function(options) {
 			_.bindAll(this, 'onSearch', 'focus');
-			this.searcher = searcher;
+			this.searcher = options.searcher;
 			this.$el.val('');
 		},
 		onSearch: function(e) {
@@ -22244,6 +22249,49 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 }).call(this);
 ;(function() {
 	this.Gx = this.Gx || {};
+	this.Gx.MapSwitchView = Backbone.View.extend({
+		el: '#mapswitch',
+		events: {
+			'change': 'toggle'
+		},
+		initialize: function(options) {
+			_.bindAll(this, 'toggle');
+			this.collection = new Gx.MapSwitchUnitCollection();
+			// ここで追加
+			Object.keys(Gx.mapTypes).forEach(_.bind(function(p) {
+				var type = Gx.mapTypes[p];
+				var model = new Gx.MapSwitchUnitModel({
+					key: type.key,
+					mapName: type.name,
+				});
+				var view = new Gx.MapSwitchUnitView({
+					model: model
+				});
+				this.$el.append(view.render().$el);
+				this.collection.add(model);
+			}, this));
+			this.$el.val(options.initialType);
+		},
+		toggle: function() {
+			app.toggleMap(this.$el.val());
+		}
+	});
+	this.Gx.MapSwitchUnitView = Backbone.View.extend({
+		tagName: 'option',
+		initialize: function() {
+			this.template = _.template($('#tmpl_map_switch_unit').html());
+			this.model.bind('change', this.render);
+		},
+		render: function() {
+			this.$el.html(this.template(this.model.attributes)).attr({
+				value: this.model.get('key')
+			});
+			return this;
+		},
+	});
+}).call(this);
+;(function() {
+	this.Gx = this.Gx || {};
 	this.Gx.InfoView = Backbone.View.extend({
 		el: '#informations',
 		initialize: function() {
@@ -22412,7 +22460,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 ;(function() {
 	this.Gx.MapViewGoogle = this.Gx.MapView.extend({
 		initialize: function(options) {
-			this.type = Gx.mapTypes.google;
+			this.type = Gx.mapTypes.google.key;
 			var init = options.lastState;
 			var latlng = new google.maps.LatLng(init.lat, init.lng);
 			var mapOpts = {
@@ -22457,6 +22505,10 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				this.setCenter(Gx.latLng(me.latLng));
 			}, this));
 		},
+		getMarkerPos: function() {
+			var p = this.posMarker;
+			return p ? Gx.latLng(p.position) : null;
+		},
 		setCenter: function(latLng) {
 			this.map.setCenter(latLng.getGoogle());
 		},
@@ -22471,7 +22523,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 ;(function() {
 	this.Gx.MapViewLeaflet = this.Gx.MapView.extend({
 		initialize: function(options) {
-			this.type = options.type || Gx.mapTypes.osm;
+			this.type = options.type || Gx.mapTypes.osm.key;
 			var init = options.lastState;
 			var latLng = L.latLng(init.lat, init.lng);
 			this.map = L.map(this.$el.attr('id')).setView(latLng, init.zoom);
@@ -22505,6 +22557,10 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				this.setCenter(Gx.latLng(me.latlng));
 			}, this));
 		},
+		getMarkerPos: function() {
+			var p = this.posMarker;
+			return p ? Gx.latLng(p.getLatLng()) : null;
+		},
 		setCenter: function(latLng) {
 			this.map.panTo(latLng.getLeaflet());
 		},
@@ -22536,6 +22592,18 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 }).call(this);
 ;(function() {
 	this.Gx = this.Gx || {};
+	this.Gx.MapSwitchUnitModel = Backbone.Model.extend({
+		defaults: function() {
+			return {
+				key: '',
+				mapName: ''
+			};
+		}
+	});
+	this.Gx.MapSwitchUnitCollection = Backbone.Collection.extend({});
+}).call(this);
+;(function() {
+	this.Gx = this.Gx || {};
 	this.Gx.PositionModel = Backbone.Model.extend({
 		defaults: function() {
 			return {
@@ -22546,7 +22614,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				lat256s: 0,
 				lng256s: 0,
 				zoom: 18,
-				mapType: Gx.mapTypes.google
+				mapType: Gx.mapTypes.google.key
 			};
 		},
 		setAttrs: function(latLng, zoom, mapType) {
@@ -22570,10 +22638,10 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			this.set(attrs);
 		},
 		isGoogle: function() {
-			return this.attributes.mapType === Gx.mapTypes.google;
+			return this.attributes.mapType === Gx.mapTypes.google.key;
 		},
 		isOsm: function() {
-			return this.attributes.mapType === Gx.mapTypes.osm;
+			return this.attributes.mapType === Gx.mapTypes.osm.key;
 		}
 	});
 }).call(this);
@@ -22590,7 +22658,8 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 	});
 	this.Gx.AddressCollection = Backbone.Collection.extend();
 }).call(this);
-;(function() {
+;
+(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.AppView = Backbone.View.extend({
 		el: '#wrapper',
@@ -22601,7 +22670,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			lastState.lat = lastState.lat || 35.5291699;
 			lastState.lng = lastState.lng || 139.6958934;
 			lastState.zoom = lastState.zoom || 9;
-			lastState.type = lastState.type || Gx.mapTypes.google;
+			lastState.type = lastState.type || Gx.mapTypes.google.key;
 			this.mapViews = [
 				new Gx.MapViewGoogle({
 					el: '#map_google',
@@ -22610,18 +22679,26 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				new Gx.MapViewLeaflet({
 					el: '#map_osm',
 					lastState: lastState,
-					type: Gx.mapTypes.osm,
+					type: Gx.mapTypes.osm.key,
 					tileUrl: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
 					attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="http://mapbox.com">Mapbox</a>'
 				})
 			];
+			this.mapView = _.findWhere(this.mapViews, {
+				type: lastState.type
+			});
 			this.searcher = new Gx.Searcher(this);
-			this.searchView = new Gx.SearchView(this.searcher);
+			this.searchView = new Gx.SearchView({
+				searcher: this.searcher
+			});
 			this.infoView = new Gx.InfoView();
 			this.bookmarkView = new Gx.BookmarkView();
-			this.toggleMap(lastState.type);
+			//this.toggleMap(lastState.type);
 			this.mapViews.forEach(function(view) {
 				view.setListeners();
+			});
+			this.mapSwitchView = new Gx.MapSwitchView({
+				initialType: lastState.type
 			});
 		},
 		jump: function(latLng, centering) {
@@ -22664,18 +22741,22 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				} else {
 					view.toggle();
 				}
+				view.fix();
 			});
 			this.mapView = this.mapViews.filter(function(view) {
 				return view.isVisible();
 			})[0] || this.mapViews[0];
 			if (prev) {
-				this.mapView.setCenter(prev.getCenter());
-				this.mapView.setZoom(prev.getZoom());
+				this.render({
+					centerPos: prev.getCenter(),
+					markerPos: prev.getMarkerPos(),
+					zoom: prev.getZoom()
+				});
 			}
 			this.mapView.updateQyeryString();
-			this.jump(this.mapView.getCenter(), true);
+			//this.jump(this.mapView.getCenter(), true);
 			this.infoView.refreshBounds(this.mapView);
-			setTimeout(this.fixer(), 100);
+			// setTimeout(this.fixer(), 100);
 		},
 		fixer: function() {
 			this.mapView.fix();
@@ -22760,5 +22841,15 @@ $(function() {
 		f();
 		$(window).resize(f);
 	})(_.bind(app.fixer, app));
+	(function(el) {
+		var w = Array.prototype.slice.call(el.children()).map(function(child) {
+			return $(child).width();
+		}).reduce(function(prev, current) {
+			return prev + current;
+		});
+		el.css({
+			width: w
+		});
+	})($('#controls'));
 });
 }).call(this);

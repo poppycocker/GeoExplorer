@@ -5,9 +5,9 @@
 		events: {
 			'keyup': 'onSearch'
 		},
-		initialize: function(searcher) {
+		initialize: function(options) {
 			_.bindAll(this, 'onSearch', 'focus');
-			this.searcher = searcher;
+			this.searcher = options.searcher;
 			this.$el.val('');
 		},
 		onSearch: function(e) {

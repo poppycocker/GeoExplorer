@@ -1,7 +1,7 @@
 ;(function() {
 	this.Gx.MapViewGoogle = this.Gx.MapView.extend({
 		initialize: function(options) {
-			this.type = Gx.mapTypes.google;
+			this.type = Gx.mapTypes.google.key;
 			var init = options.lastState;
 			var latlng = new google.maps.LatLng(init.lat, init.lng);
 			var mapOpts = {
@@ -45,6 +45,10 @@
 			this.posMarker.addListener('click', _.bind(function(me) {
 				this.setCenter(Gx.latLng(me.latLng));
 			}, this));
+		},
+		getMarkerPos: function() {
+			var p = this.posMarker;
+			return p ? Gx.latLng(p.position) : null;
 		},
 		setCenter: function(latLng) {
 			this.map.setCenter(latLng.getGoogle());

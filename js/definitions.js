@@ -1,8 +1,14 @@
 ;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.mapTypes = {
-		google: 'g',
-		osm: 'o'
+		google: {
+			key: 'g',
+			name: 'GoogleMap'
+		},
+		osm: {
+			key: 'o',
+			name: 'OpenStreetMap'
+		}
 	};
 	this.Gx.lastStateKey = 'lastState_GeoExplorer';
 	this.Gx.bookmarkKey = 'bookmarks_GeoExplorer';

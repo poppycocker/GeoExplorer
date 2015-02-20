@@ -1,7 +1,7 @@
 ;(function() {
 	this.Gx.MapViewLeaflet = this.Gx.MapView.extend({
 		initialize: function(options) {
-			this.type = options.type || Gx.mapTypes.osm;
+			this.type = options.type || Gx.mapTypes.osm.key;
 			var init = options.lastState;
 			var latLng = L.latLng(init.lat, init.lng);
 			this.map = L.map(this.$el.attr('id')).setView(latLng, init.zoom);
@@ -34,6 +34,10 @@
 			this.posMarker.on('click', _.bind(function(me) {
 				this.setCenter(Gx.latLng(me.latlng));
 			}, this));
+		},
+		getMarkerPos: function() {
+			var p = this.posMarker;
+			return p ? Gx.latLng(p.getLatLng()) : null;
 		},
 		setCenter: function(latLng) {
 			this.map.panTo(latLng.getLeaflet());

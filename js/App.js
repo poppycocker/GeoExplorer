@@ -1,4 +1,5 @@
-;(function() {
+;
+(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.AppView = Backbone.View.extend({
 		el: '#wrapper',
@@ -9,7 +10,7 @@
 			lastState.lat = lastState.lat || 35.5291699;
 			lastState.lng = lastState.lng || 139.6958934;
 			lastState.zoom = lastState.zoom || 9;
-			lastState.type = lastState.type || Gx.mapTypes.google;
+			lastState.type = lastState.type || Gx.mapTypes.google.key;
 			this.mapViews = [
 				new Gx.MapViewGoogle({
 					el: '#map_google',
@@ -18,18 +19,26 @@
 				new Gx.MapViewLeaflet({
 					el: '#map_osm',
 					lastState: lastState,
-					type: Gx.mapTypes.osm,
+					type: Gx.mapTypes.osm.key,
 					tileUrl: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
 					attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="http://mapbox.com">Mapbox</a>'
 				})
 			];
+			this.mapView = _.findWhere(this.mapViews, {
+				type: lastState.type
+			});
 			this.searcher = new Gx.Searcher(this);
-			this.searchView = new Gx.SearchView(this.searcher);
+			this.searchView = new Gx.SearchView({
+				searcher: this.searcher
+			});
 			this.infoView = new Gx.InfoView();
 			this.bookmarkView = new Gx.BookmarkView();
-			this.toggleMap(lastState.type);
+			//this.toggleMap(lastState.type);
 			this.mapViews.forEach(function(view) {
 				view.setListeners();
+			});
+			this.mapSwitchView = new Gx.MapSwitchView({
+				initialType: lastState.type
 			});
 		},
 		jump: function(latLng, centering) {
@@ -72,18 +81,22 @@
 				} else {
 					view.toggle();
 				}
+				view.fix();
 			});
 			this.mapView = this.mapViews.filter(function(view) {
 				return view.isVisible();
 			})[0] || this.mapViews[0];
 			if (prev) {
-				this.mapView.setCenter(prev.getCenter());
-				this.mapView.setZoom(prev.getZoom());
+				this.render({
+					centerPos: prev.getCenter(),
+					markerPos: prev.getMarkerPos(),
+					zoom: prev.getZoom()
+				});
 			}
 			this.mapView.updateQyeryString();
-			this.jump(this.mapView.getCenter(), true);
+			//this.jump(this.mapView.getCenter(), true);
 			this.infoView.refreshBounds(this.mapView);
-			setTimeout(this.fixer(), 100);
+			// setTimeout(this.fixer(), 100);
 		},
 		fixer: function() {
 			this.mapView.fix();
@@ -168,4 +181,14 @@ $(function() {
 		f();
 		$(window).resize(f);
 	})(_.bind(app.fixer, app));
+	(function(el) {
+		var w = Array.prototype.slice.call(el.children()).map(function(child) {
+			return $(child).width();
+		}).reduce(function(prev, current) {
+			return prev + current;
+		});
+		el.css({
+			width: w
+		});
+	})($('#controls'));
 });

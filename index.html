@@ -16,17 +16,22 @@
 		<div id="map_google"><!-- google map --></div>
 		<div id="map_osm"><!-- leaflet --></div>
 		<div id="controls" class="clearfix">
-			<div id="search_box">
+			<div id="search_box" class="control-elm">
 				<span class="typcn typcn-zoom icon-search"></span>
 				<input id="input_address" type="textbox" placeholder="Search: Ctrl+Q to focus">
 			</div>
-			<div id="bookmark_box">
+			<div id="bookmark_box" class="control-elm">
 				<span class="typcn typcn-bookmark icon-bookmark" id="btn_bookmark" title="Ctrl+M to open/close"></span>
 				<div id="bookmark">
-					<span class="typcn typcn-plus icon-plus"></span>
-					<input id="input_bookmark" type="textbox" placeholder="Add current pos as...">
+					<div class="bookmark_form">
+						<span class="typcn typcn-plus icon-plus ease-transition round"></span>
+						<input id="input_bookmark" type="textbox" placeholder="Add as..">
+					</div>
 					<ul></ul>
 				</div>
+			</div>
+			<div id="switch_box" class="control-elm">
+				<select id="mapswitch" class="ease-transition round"></select>
 			</div>
 		</div>
 		<div id="informations">
@@ -64,6 +69,10 @@
 	<script type=text/template id="tmpl_bookmark_unit">
 		<%= locationName %>
 		<span class="typcn typcn-delete icon-delete-bookmark"></span>
+	</script>
+
+	<script type=text/template id="tmpl_map_switch_unit">
+		<%= mapName %>
 	</script>
 </body>
 </html>
