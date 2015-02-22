@@ -22432,15 +22432,14 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			this.map.setZoom(val);
 		},
 		show: function(flg) {
-			if (flg) {
-				this.$el.show();
-			} else {
-				this.$el.hide();
-			}
+			var state = flg ? 'visible' : 'hidden';
+			this.$el.css({
+				visibility: state
+			});
 		},
-		toggle: function() {
-			this.$el.toggle();
-		},
+		// toggle: function() {
+		// 	this.$el.toggle();
+		// },
 		isVisible: function() {
 			return this.$el.is(':visible');
 		},
@@ -22658,8 +22657,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 	});
 	this.Gx.AddressCollection = Backbone.Collection.extend();
 }).call(this);
-;
-(function() {
+;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.AppView = Backbone.View.extend({
 		el: '#wrapper',
@@ -22693,7 +22691,6 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			});
 			this.infoView = new Gx.InfoView();
 			this.bookmarkView = new Gx.BookmarkView();
-			//this.toggleMap(lastState.type);
 			this.mapViews.forEach(function(view) {
 				view.setListeners();
 			});
@@ -22734,29 +22731,32 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			return this;
 		},
 		toggleMap: function(type) {
-			var prev = this.mapView;
-			this.mapViews.forEach(function(view) {
-				if (type) {
-					view.show(view.type === type);
-				} else {
-					view.toggle();
-				}
-				view.fix();
-			});
-			this.mapView = this.mapViews.filter(function(view) {
-				return view.isVisible();
-			})[0] || this.mapViews[0];
-			if (prev) {
+			var current = this.mapView;
+			if (current.type === type) {
+				return;
+			}
+			// select next map
+			if (type) {
+				this.mapView = _.findWhere(this.mapViews, {
+					type: type
+				});
+			} else {
+				this.mapView = _.filter(this.mapViews, function(v) {
+					return v.type !== current.type;
+				})[0];
+			}
+			if (current) {
 				this.render({
-					centerPos: prev.getCenter(),
-					markerPos: prev.getMarkerPos(),
-					zoom: prev.getZoom()
+					centerPos: current.getCenter(),
+					markerPos: current.getMarkerPos(),
+					zoom: current.getZoom()
 				});
 			}
-			this.mapView.updateQyeryString();
-			//this.jump(this.mapView.getCenter(), true);
 			this.infoView.refreshBounds(this.mapView);
-			// setTimeout(this.fixer(), 100);
+			this.mapViews.forEach(_.bind(function(v) {
+				v.show(this.mapView.type === v.type);
+			}, this));
+			this.mapView.fix();
 		},
 		fixer: function() {
 			this.mapView.fix();

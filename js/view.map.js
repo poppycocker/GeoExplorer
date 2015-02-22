@@ -20,15 +20,14 @@
 			this.map.setZoom(val);
 		},
 		show: function(flg) {
-			if (flg) {
-				this.$el.show();
-			} else {
-				this.$el.hide();
-			}
+			var state = flg ? 'visible' : 'hidden';
+			this.$el.css({
+				visibility: state
+			});
 		},
-		toggle: function() {
-			this.$el.toggle();
-		},
+		// toggle: function() {
+		// 	this.$el.toggle();
+		// },
 		isVisible: function() {
 			return this.$el.is(':visible');
 		},

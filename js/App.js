@@ -1,5 +1,4 @@
-;
-(function() {
+;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.AppView = Backbone.View.extend({
 		el: '#wrapper',
@@ -33,7 +32,6 @@
 			});
 			this.infoView = new Gx.InfoView();
 			this.bookmarkView = new Gx.BookmarkView();
-			//this.toggleMap(lastState.type);
 			this.mapViews.forEach(function(view) {
 				view.setListeners();
 			});
@@ -74,29 +72,32 @@
 			return this;
 		},
 		toggleMap: function(type) {
-			var prev = this.mapView;
-			this.mapViews.forEach(function(view) {
-				if (type) {
-					view.show(view.type === type);
-				} else {
-					view.toggle();
-				}
-				view.fix();
-			});
-			this.mapView = this.mapViews.filter(function(view) {
-				return view.isVisible();
-			})[0] || this.mapViews[0];
-			if (prev) {
+			var current = this.mapView;
+			if (current.type === type) {
+				return;
+			}
+			// select next map
+			if (type) {
+				this.mapView = _.findWhere(this.mapViews, {
+					type: type
+				});
+			} else {
+				this.mapView = _.filter(this.mapViews, function(v) {
+					return v.type !== current.type;
+				})[0];
+			}
+			if (current) {
 				this.render({
-					centerPos: prev.getCenter(),
-					markerPos: prev.getMarkerPos(),
-					zoom: prev.getZoom()
+					centerPos: current.getCenter(),
+					markerPos: current.getMarkerPos(),
+					zoom: current.getZoom()
 				});
 			}
-			this.mapView.updateQyeryString();
-			//this.jump(this.mapView.getCenter(), true);
 			this.infoView.refreshBounds(this.mapView);
-			// setTimeout(this.fixer(), 100);
+			this.mapViews.forEach(_.bind(function(v) {
+				v.show(this.mapView.type === v.type);
+			}, this));
+			this.mapView.fix();
 		},
 		fixer: function() {
 			this.mapView.fix();
