@@ -26,6 +26,7 @@
 			this.mapView = _.findWhere(this.mapViews, {
 				type: lastState.type
 			});
+			this.setCurrentMapVisible();
 			this.searcher = new Gx.Searcher(this);
 			this.searchView = new Gx.SearchView({
 				searcher: this.searcher
@@ -72,33 +73,45 @@
 			}
 			return this;
 		},
-		toggleMap: function(type) {
+		toggleMap: function(nextType) {
 			var current = this.mapView;
-			if (current.type === type) {
+			if (current.type === nextType) {
 				return;
 			}
 			// select next map
-			if (type) {
+			if (nextType) {
 				this.mapView = _.findWhere(this.mapViews, {
-					type: type
+					type: nextType
 				});
 			} else {
 				this.mapView = _.filter(this.mapViews, function(v) {
 					return v.type !== current.type;
 				})[0];
 			}
+			this.setCurrentMapVisible();
+			this.mapView.fix();
 			if (current) {
 				this.render({
 					centerPos: current.getCenter(),
 					markerPos: current.getMarkerPos(),
-					zoom: current.getZoom()
+					zoom: current.getZoom(),
+					animate: false
 				});
 			}
 			this.infoView.refreshBounds(this.mapView);
-			this.mapViews.forEach(_.bind(function(v) {
-				v.show(this.mapView.type === v.type);
-			}, this));
-			this.mapView.fix();
+			this.infoView.clickedPointView.model.set({
+				mapType: nextType
+			});
+			this.mapView.updateQyeryString();
+		},
+		setCurrentMapVisible: function() {
+			var m = this.mapView;
+			if (!m) {
+				return;
+			}
+			this.mapViews.forEach(function(v) {
+				v.show(v.cid === m.cid);
+			});
 		},
 		fixer: function() {
 			this.mapView.fix();
@@ -125,20 +138,36 @@ $(function() {
 	// Start Router
 	var Router = Backbone.Router.extend({
 		routes: {
-			'(:states)': 'jump'
+			'(:query)': 'jump'
 		},
-		jump: function(states) {
-			if (!states || !states.match(/^(-{0,1}\d+\.{0,1}\d+,){2}\d+,[A-z]$/g)) {
-				return;
+		jump: function(query) {
+			query = query || '';
+			var states;
+			if (query.match(/^(-{0,1}\d+\.{0,1}\d+,){2}\d+,[A-z]$/g)) {
+				states = this.splitQuery(query);
+				app.toggleMap(states.type);
+			} else {
+				states = {
+					latLng: app.mapView.getCenter(),
+					zoom: app.mapView.getZoom()
+				};
+				app.infoView.refreshBounds(app.mapView);
 			}
-			var sp = states.split(',');
+			app.jump(states.latLng, true).render({
+				zoom: states.zoom
+			});
+			app.mapSwitchView.setOption(app.mapView.type);
+		},
+		splitQuery: function(query) {
+			var sp = query.split(',');
 			var coords = sp.slice(0, 3).map(function(v) {
 				return +v;
 			});
-			app.toggleMap(sp[3]);
-			app.jump(Gx.latLng(coords[0], coords[1]), true).render({
-				zoom: coords[2]
-			});
+			return {
+				latLng: Gx.latLng(coords[0], coords[1]),
+				zoom: coords[2],
+				type: sp[3]
+			};
 		}
 	});
 	Gx.router = new Router();
@@ -183,14 +212,15 @@ $(function() {
 		f();
 		$(window).resize(f);
 	})(_.bind(app.fixer, app));
+	// control box fixer
 	(function(el) {
 		var w = Array.prototype.slice.call(el.children()).map(function(child) {
 			return $(child).width();
 		}).reduce(function(prev, current) {
 			return prev + current;
-		});
+		}) + 1;
 		el.css({
-			width: w
+			width: w + 'px'
 		});
 	})($('#controls'));
 });

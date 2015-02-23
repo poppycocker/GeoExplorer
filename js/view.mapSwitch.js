@@ -21,10 +21,13 @@
 				this.$el.append(view.render().$el);
 				this.collection.add(model);
 			}, this));
-			this.$el.val(options.initialType);
+			this.setOption(options.initialType);
 		},
 		toggle: function() {
 			app.toggleMap(this.$el.val());
+		},
+		setOption: function(type) {
+			this.$el.val(type);
 		}
 	});
 	this.Gx.MapSwitchUnitView = Backbone.View.extend({

@@ -22,11 +22,8 @@
 				visibility: state
 			});
 		},
-		// toggle: function() {
-		// 	this.$el.toggle();
-		// },
 		isVisible: function() {
-			return this.$el.is(':visible');
+			return this.$el.css('visibility') === 'visible';
 		},
 		updateQyeryString: function() {
 			if (!Gx.router || !this.isVisible()) {
