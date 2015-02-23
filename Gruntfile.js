@@ -14,6 +14,18 @@ module.exports = function(grunt) {
                 cwd: 'bower_components/leaflet/dist/images',
                 src: '*',
                 dest: 'images/'
+            },
+            css_typicons: {
+                expand: true,
+                cwd: 'bower_components/typicons/src/font',
+                src: [
+                    'typicons.eot',
+                    'typicons.min.css',
+                    'typicons.svg',
+                    'typicons.ttf',
+                    'typicons.woff',
+                ],
+                dest: 'css/dist/typicons/'
             }
         },
         concat: {
@@ -69,20 +81,36 @@ module.exports = function(grunt) {
                 }
             }
         },
+        cssmin: {
+            target: {
+                files: {
+                    'css/dist/min.css': [
+                        'css/reset.css',
+                        'css/leaflet.css',
+                        'css/style.css'
+                    ]
+                }
+            }
+        },
         watch: {
             js: {
                 files: 'js/*.js',
                 tasks: ['concat', 'uglify']
+            },
+            css: {
+                files: 'css/*.css',
+                tasks: ['cssmin']
             }
         }
     });
 
     // プラグインのロード・デフォルトタスクの登録
     grunt.loadNpmTasks('grunt-contrib-copy');
-    grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-concat');
+    grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.registerTask('default', ['copy', 'concat', 'uglify']);
+    grunt.registerTask('default', ['copy', 'concat', 'uglify', 'cssmin']);
 
     // 更新監視は grunt watch でスタート
 };

@@ -87,10 +87,11 @@ a
 #map_google,
 #map_osm
 {
-    width: 100%;
     position: absolute;
     top: 0;
     left: 0;
+
+    width: 100%;
 }
 
 #controls
@@ -113,6 +114,7 @@ a
 .icon-search
 {
     font-size: 2em;
+    line-height: 100%;
 
     position: absolute;
     left: .2em;
@@ -133,7 +135,8 @@ a
 
 .icon-bookmark
 {
-    font-size: 2.3em;
+    font-size: 2.1em;
+    line-height: 100%;
 
     display: block;
 
@@ -176,9 +179,7 @@ a
     border-left: 12px solid transparent;
 }
 
-.bookmark_form
-{
-}
+
 
 .icon-plus
 {
