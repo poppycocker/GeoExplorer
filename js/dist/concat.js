@@ -22455,7 +22455,9 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				return Gx.Utils.round(+v, 7);
 			});
 			queries.push(this.type);
-			Gx.router.navigate(queries.join(','), false);
+			Gx.router.navigate(queries.join(','), {
+				replace: true
+			});
 		}
 	});
 }).call(this);
