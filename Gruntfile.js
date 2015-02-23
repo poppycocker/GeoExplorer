@@ -14,6 +14,18 @@ module.exports = function(grunt) {
                 cwd: 'bower_components/leaflet/dist/images',
                 src: '*',
                 dest: 'images/'
+            },
+            css_typicons: {
+                expand: true,
+                cwd: 'bower_components/typicons/src/font',
+                src: [
+                    'typicons.eot',
+                    'typicons.min.css',
+                    'typicons.svg',
+                    'typicons.ttf',
+                    'typicons.woff',
+                ],
+                dest: 'css/dist/typicons/'
             }
         },
         concat: {
