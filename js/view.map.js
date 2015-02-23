@@ -1,54 +1,40 @@
 ;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.MapView = Backbone.View.extend({
-		el: '#map_canvas',
-		initialize: function() {
-			// Generate the Map, get last state from localStorage
-			var lastState = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
-			var latlng = new google.maps.LatLng(lastState.lat || 35.5291699, lastState.lng || 139.6958934);
-			var options = {
-				zoom: lastState.zoom || 9,
-				center: latlng,
-				mapTypeControl: true,
-				mapTypeControlOptions: {
-					style: google.maps.MapTypeControlStyle.DEFAULT
-				},
-				zoomControl: true,
-				scaleControl: true,
-				zoomControlOptions: {
-					style: google.maps.ZoomControlStyle.LARGE
-				},
-				mapTypeId: google.maps.MapTypeId.ROADMAP
-			};
-
-			this.map = new google.maps.Map(document.getElementById('map_canvas'), options);
-			this.posMarker = null;
-		},
-		clearMarker: function() {
-			if (this.posMarker) {
-				this.posMarker.setMap(null);
-			}
-		},
-		createMarker: function(latLng) {
-			this.clearMarker();
-			this.posMarker = new google.maps.Marker({
-				map: this.map,
-				position: latLng
-			});
-			this.posMarker.addListener('click', _.bind(function(me) {
-				this.setCenter(me.latLng);
-			}, this));
-		},
-		setCenter: function(latLng) {
-			this.map.setCenter(latLng);
-		},
 		saveState: function() {
-			var center = this.map.getCenter();
+			var c = this.getCenter();
 			Gx.Utils.localStorageWrapper.data(Gx.lastStateKey, {
-				lat: center.lat(),
-				lng: center.lng(),
-				zoom: this.map.getZoom()
+				lat: c.lat,
+				lng: c.lng,
+				zoom: this.getZoom(),
+				type: this.type
 			});
+		},
+		getCenter: function() {
+			return Gx.latLng(this.map.getCenter());
+		},
+		getZoom: function() {
+			return this.map.getZoom();
+		},
+		show: function(flg) {
+			var state = flg ? 'visible' : 'hidden';
+			this.$el.css({
+				visibility: state
+			});
+		},
+		isVisible: function() {
+			return this.$el.css('visibility') === 'visible';
+		},
+		updateQyeryString: function() {
+			if (!Gx.router || !this.isVisible()) {
+				return;
+			}
+			var c = this.getCenter();
+			var queries = [c.lat, c.lng, this.getZoom()].map(function(v) {
+				return Gx.Utils.round(+v, 7);
+			});
+			queries.push(this.type);
+			Gx.router.navigate(queries.join(','), false);
 		}
 	});
 }).call(this);

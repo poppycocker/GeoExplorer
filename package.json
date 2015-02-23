@@ -9,7 +9,9 @@
     "grunt-contrib-uglify": "^0.7.0",
     "grunt-contrib-watch": "^0.6.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "grunt-contrib-copy": "^0.7.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

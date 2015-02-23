@@ -1,229 +1,380 @@
-html, body {
-	margin: 0;
-	padding: 0;
-	font-family: Arial, sans-serif;
-	font-size: 13px;
-	color: #333333;
+html,
+body
+{
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+
+    height: 100%;
+    margin: 0;
+    padding: 0;
+
+    color: #333;
 }
 
-h1, h2, h3 {
-	margin: 0;
-	padding: 0.8em 0 0 0.8em;
-	font-weight: bold;
+h1,
+h2,
+h3
+{
+    font-weight: bold;
+
+    margin: 0;
+    padding: .8em 0 0 .8em;
 }
 
-p {
-	padding: 0.5em 0.8em 0.5em 1.0em;
+p
+{
+    padding: .5em .8em .5em 1.0em;
 }
 
-h1 {
-	font-size: 2.4em;
-	position: fixed;
-	display: block;
-	padding: 0;
-	left: 3em;
-	top: 2%;
-	z-index: 65536;
-	color: white;
-	text-shadow: 2px 2px 5px black;
+h1
+{
+    font-size: 2.4em;
+
+    position: fixed;
+    z-index: 65536;
+    top: 2%;
+    left: 3em;
+
+    display: block;
+
+    padding: 0;
+
+    color: white;
+    text-shadow: 2px 2px 5px black;
 }
 
-h2 {
-	font-size: 1.2em;
+h2
+{
+    font-size: 1.2em;
 }
 
-h3 {
-	font-size: 1.0em;
+h3
+{
+    font-size: 1.0em;
 }
 
-em {
-	color: black;
+em
+{
+    color: black;
 }
 
-li {
-	list-style-type: disc;
-	margin-left: 2.2em;
+li
+{
+    margin-left: 2.2em;
+
+    list-style-type: disc;
 }
 
-a {
-	color: navy;
+a
+{
+    color: #3498db;
 }
 
-.clearfix:after {
-	content: "";
-	display: block;
-	clear: both;
+.clearfix:after
+{
+    display: block;
+    clear: both;
+
+    content: '';
 }
 
-#map_canvas {
-	width: 100%;
+#wrapper
+{
+    width: 100%;
+    height: 100%;
 }
 
-#controls {
-	position: fixed;
-	left: 35%;
-	top: 2.5%;
-	width: 450px;
-	height: 1.1em;
-	z-index: 65536;
+#map_google,
+#map_osm
+{
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
-#search_box {
-	width: 80%;
-	height: 140%;
-	float: left;
+#controls
+{
+    position: fixed;
+    z-index: 65536;
+    top: 2.5%;
+    right: 0;
+    left: 0;
+
+    height: 1.1em;
+    margin: 0 auto;
 }
 
-.icon-search {
-	position: absolute;
-	left: 0.2em;
-	font-size: 2.2em;
-	color: #666666;
+#search_box
+{
+    height: 140%;
 }
 
-#input_address {
-	width: 80%;
-	font-size: 1.5em;
-	padding: 0.2em 0.2em 0.2em 2.1em;
-	height: 100%;
+.icon-search
+{
+    font-size: 2em;
+
+    position: absolute;
+    left: .2em;
+
+    color: #3498db;
 }
 
-#bookmark_box {
-	width: 20%;
-	height: 140%;
-	float: left;
+#input_address
+{
+    font-size: 1.5em;
+
+    width: 12em;
+    height: 100%;
+    padding: .2em .2em .2em 2.1em;
+
+    border: 1px solid #3498db;
 }
 
-.icon-bookmark {
-	float: left;
-	font-size: 2.3em;
-	background-color: cornflowerblue;
-	color: white;
-	display: block;
+.icon-bookmark
+{
+    font-size: 2.3em;
+
+    display: block;
+
+    color: white;
+    border-radius: 3px;
 }
-.icon-bookmark:hover {
-	cursor: pointer;
-	opacity: 0.8;
+.icon-bookmark:hover
+{
+    cursor: pointer;
+
+    opacity: .8;
 }
 
-#bookmark {
-	display: none;
-	width: 40%;
-	height: auto;
-	left: 61%;
-	top: 320%;
-	position: absolute;
-	background-color: white;
-	padding: 2%;
-	overflow-y: scroll;
+#bookmark
+{
+    position: absolute;
+    top: 320%;
+
+    display: none;
+    overflow-x: hidden;
+    overflow-y: scroll;
+
+    width: 12em;
+    height: auto;
+    padding: .5em 1em .5em .5em;
+
+    background-color: white;
 }
 
-#bookmark:after {
-	content: '';
-	position: absolute;
-	border-bottom: 15px solid white;
-	border-right: 12px solid transparent;
-	border-left: 12px solid transparent;
-	top: -12px;
-	left: 45%;
+#bookmark:after
+{
+    position: absolute;
+    top: -12px;
+    left: 45%;
+
+    content: '';
+
+    border-right: 12px solid transparent;
+    border-bottom: 15px solid white;
+    border-left: 12px solid transparent;
 }
 
-.icon-plus {
-	position: absolute;
-	left: 0.5em;
-	top: 0.6em;
-	font-size: 1.6em;
-	color: #666666;
-}
-.icon-plus:hover {
-	cursor: pointer;
-	color: skyblue;
-}
-.icon-plus:active {
-	top: 0.65em;
+.bookmark_form
+{
 }
 
-#input_bookmark {
-	width: 84%;
-	font-size: 1.2em;
-	line-height: 1.5em;
-	padding: 0.2em 0.2em 0.2em 1.6em;
-	border-top: none;
-	border-right: none;
-	border-left: none;
-	border-bottom: 1px solid #999999;
-	margin-bottom: 0.2em;
+.icon-plus
+{
+    font-size: 1.6em;
+
+    position: absolute;
+    top: .4em;
+
+    color: #666;
+}
+.icon-plus:hover
+{
+    cursor: pointer;
+
+    color: #3498db;
+}
+.icon-plus:active
+{
+    top: .65em;
 }
 
-#bookmark li {
-	list-style-type: none;
-	font-size: 1.2em;
-	margin: 0.3em 0 0 0;
-	padding: 0 0.5em;
-	background-color: #EEEEEE;
-	width: auto;
-	line-height: 1.5em;
-}
-#bookmark li:hover {
-	cursor: pointer;
-	background-color: skyblue;
-}
-.bkm_li_hover {
-	background-color: skyblue !important;
+#input_bookmark
+{
+    font-size: 1.2em;
+    line-height: 1.5em;
+
+    width: 84%;
+    margin-bottom: .2em;
+    padding: .2em .2em .2em 1.6em;
+
+    border-top: none;
+    border-right: none;
+    border-bottom: 1px solid #999;
+    border-left: none;
 }
 
-.icon-delete-bookmark {
-	position: absolute;
-	right: 0.5em;
-	font-size: 1.4em;
-	color: #666666;
+#bookmark li
+{
+    font-size: 1.2em;
+    line-height: 1.5em;
+
+    width: 100%;
+    margin: .3em 0 0 0;
+    padding: 0 .5em;
+
+    list-style-type: none;
+
+    background-color: #eee;
 }
-.icon-delete-bookmark:hover {
-	color: darkred;
+#bookmark li:hover
+{
+    cursor: pointer;
+
+    background-color: skyblue;
 }
-.icon-delete-bookmark:active {
-	font-weight: bold;
+.bkm_li_hover
+{
+    background-color: skyblue !important;
 }
 
-#center_info, #clicked_point {
-	background-color: #EEEEEE;
+.icon-delete-bookmark
+{
+    font-size: 1.4em;
+
+    position: absolute;
+    right: .5em;
+
+    color: #666;
+}
+.icon-delete-bookmark:hover
+{
+    color: darkred;
+}
+.icon-delete-bookmark:active
+{
+    font-weight: bold;
 }
 
-#informations {
-	position: absolute;
-	right: 0;
-	width: 260px;
-	max-width: 350px;
-	top: 6%;
-	height: 91%;
-	padding: 0;
-	background-color: #ffffff;
-	opacity: 0.85;
+#center_info,
+#clicked_point
+{
+    padding: .5em .8em .5em 1.0em;
+
+    background-color: #eee;
 }
 
-#address_info {
-	overflow-y: scroll;
+#informations
+{
+    position: absolute;
+    top: 6%;
+    right: 0;
+
+    width: 260px;
+    max-width: 350px;
+    height: 91%;
+    padding: 0;
+
+    opacity: .85;
+    background-color: #fff;
 }
 
-.llstring {
-	font-weight: bold;
-	width: 90%;
-	border: none;
-	background-color: inherit;
-	padding: 1px 0;
+#address_info
+{
+    overflow-y: scroll;
 }
 
-.copyright {
-	z-index: 1000001;
-	position: absolute;
-	bottom: 0px;
-	left: 0;
-	right: 0;
-	margin:0 auto;
-	width: 19em;
-	height: 13px;
-	color: #333333;
-	font-size: 11px;
-	padding: 0 1em;
-	background-color: rgba(255, 255, 255, 0.6);
+.llstring
+{
+    font-weight: bold;
+
+    width: 90%;
+    padding: 1px 0;
+
+    border: none;
+    background-color: inherit;
+}
+
+.copyright
+{
+    font-size: 11px;
+
+    position: absolute;
+    z-index: 1000001;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    width: 19em;
+    height: 13px;
+    margin: 0 auto;
+    padding: 0 1em;
+
+    color: #333;
+    background-color: rgba(255, 255, 255, .6);
+}
+
+#mapswitch
+{
+    /*font-family:arial,tahoma;*/
+    font-size: 16px;
+    font-weight: bold;
+
+    width: 10em;
+    height: 1.83em;
+    padding: .25em;
+
+    text-align: center;
+
+    color: white;
+    color: #fff;
+    border: 0;
+    -webkit-border-radius: 3px;
+    outline: 0;
+    background: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'50px\' height=\'50px\'><polyline points=\'46.139,15.518 25.166,36.49 4.193,15.519\'/></svg>');
+    background-repeat: no-repeat;
+    background-position: right .3em top 50%;
+    background-size: 16px 16px;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, .25);
+
+    -webkit-appearance: none;
+}
+
+#mapswitch option
+{
+    padding: .2em 0;
+}
+
+.round
+{
+    border-radius: 3px;
+}
+.ease-transition
+{
+    -webkit-transition: .3s ease all;
+       -moz-transition: .3s ease all;
+        -ms-transition: .3s ease all;
+         -o-transition: .3s ease all;
+            transition: .3s ease all;
+}
+
+#mapswitch,
+.icon-bookmark
+{
+    height: 100%;
+    margin-left: 16px;
+
+    background-color: #3498db;
+}
+
+#mapswitch:hover,
+.icon-bookmark:hover
+{
+    background-color: #2980b9;
+}
+
+.control-elm
+{
+    float: left;
 }

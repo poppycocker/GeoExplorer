@@ -9,7 +9,7 @@
 			search: function(key) {
 				var coord = this.getLatLngFromString(key);
 				if (coord.OK) {
-					key = new google.maps.LatLng(coord.lat, coord.lng);
+					key = Gx.latLng(coord.lat, coord.lng);
 					this.app.render({
 						centerPos: key,
 						markerPos: key
@@ -19,7 +19,7 @@
 				this.geocode(key, _.bind(function(results) {
 					var latLng;
 					if (results[0] && results[0].geometry) {
-						latLng = results[0].geometry.location;
+						latLng = Gx.latLng(results[0].geometry.location);
 					}
 					if (!coord.OK && latLng) {
 						this.app.render({
@@ -35,8 +35,8 @@
 			},
 			geocode: function(key, callback) {
 				var q = {};
-				if (key instanceof google.maps.LatLng) {
-					q.latLng = key;
+				if (key instanceof Gx.LatLng) {
+					q.latLng = key.getGoogle();
 				} else {
 					q.address = key;
 				}
@@ -55,9 +55,9 @@
 					callback(results);
 				});
 			},
-			getLatLngFromString: function(latlng) {
-				var translated, tmp1 = latlng.replace('北緯', 'N').replace('南緯', 'S').replace('西経', 'W').replace('東経', 'E').trim(),
-					tmp2 = latlng.replace(/\.|,|\'/g, ' ').replace(/"/g, '').replace('N', 'N ').replace('S', 'S ').replace('E', 'E ').replace('W', 'W ');
+			getLatLngFromString: function(llStr) {
+				var translated, tmp1 = llStr.replace('北緯', 'N').replace('南緯', 'S').replace('西経', 'W').replace('東経', 'E').trim(),
+					tmp2 = llStr.replace(/\.|,|\'/g, ' ').replace(/"/g, '').replace('N', 'N ').replace('S', 'S ').replace('E', 'E ').replace('W', 'W ');
 				var tmp2idx = tmp2.search(/N|S/);
 				tmp2 = tmp2.substr(tmp2idx) + '00 ' + tmp2.substr(0, tmp2idx - 1) + '00';
 				if (tmp1.match(/(N|S)(\s\d{1,3}){4}\s(E|W)(\s\d{1,3}){3,4}/)) {

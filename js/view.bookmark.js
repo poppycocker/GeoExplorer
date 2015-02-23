@@ -188,7 +188,7 @@
 			if (this.removeFlg) {
 				return;
 			}
-			app.jump(new google.maps.LatLng(this.model.get('lat'), this.model.get('lng')), true);
+			app.jump(Gx.latLng(this.model.get('lat'), this.model.get('lng')), true);
 		},
 		onSelect: function() {
 			this.$el.addClass('bkm_li_hover');
