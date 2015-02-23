@@ -6,9 +6,9 @@
 			L.Icon.Default.imagePath = 'images';
 			// Generate the Map, get last state from localStorage
 			var lastState = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
-			lastState.lat = lastState.lat || 35.5291699;
-			lastState.lng = lastState.lng || 139.6958934;
-			lastState.zoom = lastState.zoom || 9;
+			lastState.lat = lastState.lat || Gx.defaultState.lat;
+			lastState.lng = lastState.lng || Gx.defaultState.lng;
+			lastState.zoom = lastState.zoom || Gx.defaultState.zoom;
 			lastState.type = lastState.type || Gx.mapTypes.google.key;
 			this.mapViews = [
 				new Gx.MapViewGoogle({
