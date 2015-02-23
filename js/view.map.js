@@ -34,7 +34,9 @@
 				return Gx.Utils.round(+v, 7);
 			});
 			queries.push(this.type);
-			Gx.router.navigate(queries.join(','), false);
+			Gx.router.navigate(queries.join(','), {
+				replace: true
+			});
 		}
 	});
 }).call(this);
