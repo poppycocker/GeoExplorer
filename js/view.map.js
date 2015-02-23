@@ -16,9 +16,6 @@
 		getZoom: function() {
 			return this.map.getZoom();
 		},
-		setZoom: function(val) {
-			this.map.setZoom(val);
-		},
 		show: function(flg) {
 			var state = flg ? 'visible' : 'hidden';
 			this.$el.css({

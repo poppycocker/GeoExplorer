@@ -39,8 +39,15 @@
 			var p = this.posMarker;
 			return p ? Gx.latLng(p.getLatLng()) : null;
 		},
-		setCenter: function(latLng) {
-			this.map.panTo(latLng.getLeaflet());
+		setCenter: function(latLng, animate) {
+			this.map.panTo(latLng.getLeaflet(), {
+				animate: animate
+			});
+		},
+		setZoom: function(val, animate) {
+			this.map.setZoom(val, {
+				animate: animate
+			});
 		},
 		fix: function() {
 			this.$el.css({

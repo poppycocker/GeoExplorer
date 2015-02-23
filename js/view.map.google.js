@@ -53,6 +53,9 @@
 		setCenter: function(latLng) {
 			this.map.setCenter(latLng.getGoogle());
 		},
+		setZoom: function(val) {
+			this.map.setZoom(val);
+		},
 		fix: function() {
 			this.$el.css({
 				height: $(window).height() + 'px'

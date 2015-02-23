@@ -54,8 +54,9 @@
 			return this;
 		},
 		render: function(params) {
+			var animate = !!params.animate;
 			if (params.centerPos) {
-				this.mapView.setCenter(params.centerPos);
+				this.mapView.setCenter(params.centerPos, animate);
 			}
 			if (params.markerPos) {
 				this.mapView.createMarker(params.markerPos);
@@ -67,7 +68,7 @@
 				this.bookmarkView.setSearchKey(params.bookmarkTitle);
 			}
 			if (params.zoom) {
-				this.mapView.map.setZoom(params.zoom);
+				this.mapView.setZoom(params.zoom, animate);
 			}
 			return this;
 		},
