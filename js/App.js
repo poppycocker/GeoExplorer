@@ -79,15 +79,13 @@
 				return;
 			}
 			// select next map
-			if (nextType) {
-				this.mapView = _.findWhere(this.mapViews, {
-					type: nextType
-				});
-			} else {
-				this.mapView = _.filter(this.mapViews, function(v) {
-					return v.type !== current.type;
-				})[0];
+			var next = _.findWhere(this.mapViews, {
+				type: nextType
+			});
+			if (!next) {
+				return;
 			}
+			this.mapView = next;
 			this.setCurrentMapVisible();
 			this.mapView.fix();
 			if (current) {
@@ -202,9 +200,6 @@ $(function() {
 			app.bookmarkView.toggleBookmark();
 		}, opts);
 
-		shortcut.add('Ctrl+I', function() {
-			app.toggleMap();
-		}, opts);
 	})();
 
 	// map & address_info & bookmark box fixer
