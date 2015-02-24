@@ -202,9 +202,6 @@ $(function() {
 			app.bookmarkView.toggleBookmark();
 		}, opts);
 
-		shortcut.add('Ctrl+I', function() {
-			app.toggleMap();
-		}, opts);
 	})();
 
 	// map & address_info & bookmark box fixer
