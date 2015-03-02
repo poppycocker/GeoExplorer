@@ -28,7 +28,7 @@ p
 
 h1
 {
-    font-size: 2.4em;
+    font-size: 2em;
 
     position: fixed;
     z-index: 65536;
@@ -126,7 +126,7 @@ a
 {
     font-size: 1.5em;
 
-    width: 12em;
+    width: 10em;
     height: 100%;
     padding: .2em .2em .2em 2.1em;
 
