@@ -21749,7 +21749,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				return L.latLng(this.lat, this.lng);
 			},
 			getString: function() {
-				return [this.lat, this.lng].join(', ');
+				return [this.lat, this.lng].join(',');
 			}
 		};
 		return c;
