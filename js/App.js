@@ -3,6 +3,7 @@
 	this.Gx.AppView = Backbone.View.extend({
 		el: '#wrapper',
 		initialize: function() {
+			_.bindAll(this, 'updateQyeryString')
 			L.Icon.Default.imagePath = 'images';
 			// Generate the Map, get last state from localStorage
 			var lastState = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
@@ -42,9 +43,9 @@
 			});
 			this.infoView = new Gx.InfoView();
 			this.bookmarkView = new Gx.BookmarkView();
-			this.mapViews.forEach(function(view) {
-				view.setListeners();
-			});
+			_.each(this.mapViews, function(view) {
+				view.setListeners(this);
+			}, this);
 			this.mapSwitchView = new Gx.MapSwitchView({
 				initialType: lastState.mapType
 			});
@@ -112,7 +113,7 @@
 			this.infoView.clickedPointView.model.set({
 				mapType: nextType
 			});
-			this.mapView.updateQyeryString();
+			this.updateQyeryString();
 		},
 		setCurrentMapVisible: function() {
 			var m = this.mapView;
@@ -141,6 +142,22 @@
 				return;
 			}
 			this.jump(markerPos);
+			this.updateQyeryString();
+		},
+		updateQyeryString: function() {
+			var m = this.mapView;
+			if (!Gx.router || !m.isVisible()) {
+				return;
+			}
+			var c = m.getCenter();
+			var queries = [c.lat, c.lng, m.getZoom()].map(function(v) {
+				return Gx.Utils.round(+v, 7);
+			});
+			queries.push(m.type);
+			queries.push(this.searcher.type);
+			Gx.router.navigate(queries.join(','), {
+				replace: true
+			});
 		},
 		fixer: function() {
 			this.mapView.fix();
@@ -162,7 +179,7 @@
 
 $(function() {
 	// Finally, create AppView to start the application.
-	window.app = new Gx.AppView();
+	Gx.app = new Gx.AppView();
 
 	// Start Router
 	var Router = Backbone.Router.extend({
@@ -171,34 +188,48 @@ $(function() {
 		},
 		jump: function(query) {
 			query = query || '';
-			var states;
-			// if (query.match(/^(-{0,1}\d+\.{0,1}\d+,){2}\d+(,[A-z]){2}$/g)) {
-			if (query.match(/^(-{0,1}\d+\.{0,1}\d+,){2}\d+,[A-z]$/g)) {
-				states = this.splitQuery(query);
-				app.toggleMap(states.type);
+			var states = this.splitQuery(query);
+			if (states.valid) {
+				Gx.app.toggleMap(states.mapType);
+				Gx.app.toggleSearcher(states.searcherType);
 			} else {
 				states = {
-					latLng: app.mapView.getCenter(),
-					zoom: app.mapView.getZoom()
+					latLng: Gx.app.mapView.getCenter(),
+					zoom: Gx.app.mapView.getZoom()
 				};
-				app.infoView.refreshBounds(app.mapView);
+				Gx.app.infoView.refreshBounds(Gx.app.mapView);
 			}
-			app.jump(states.latLng, true).render({
+			Gx.app.jump(states.latLng, true).render({
 				zoom: states.zoom
 			});
-			app.mapSwitchView.setOption(app.mapView.type);
+			Gx.app.mapSwitchView.setOption(Gx.app.mapView.type);
 		},
 		splitQuery: function(query) {
+			// 35.6894875,139.6917064
+			// or
+			// 35.6894875,139.6917064,13,g,n
+			if (query.match(/^-{0,1}\d+\.{0,1}\d+,-{0,1}\d+\.{0,1}\d+$/g) ||
+				query.match(/^(-{0,1}\d+\.{0,1}\d+,){2}\d+(,[A-z]){2}$/g)) {
+				return {
+					valid: false
+				};
+			}
 			var sp = query.split(',');
 			var coords = sp.slice(0, 3).map(function(v) {
 				return +v;
 			});
-			return {
-				latLng: Gx.latLng(coords[0], coords[1]),
+			var ret = {
+				valid: true,
+				latLng: Gx.latLng(coords[0], coords[1])
+			};
+			if (sp.length == 2) {
+				return ret;
+			}
+			return _.extend(ret, {
 				zoom: coords[2],
 				mapType: sp[3],
 				searcherType: sp[4]
-			};
+			});
 		}
 	});
 	Gx.router = new Router();
@@ -206,8 +237,17 @@ $(function() {
 
 	// Save current state to localStorage on closing App
 	window.onbeforeunload = function() {
-		app.mapView.saveState();
-		app.bookmarkView.save();
+		var m = Gx.app.mapView;
+		var c = m.getCenter();
+		Gx.Utils.localStorageWrapper.data(Gx.lastStateKey, {
+			lat: c.lat,
+			lng: c.lng,
+			zoom: m.getZoom(),
+			mapType: m.type,
+			searcherType: Gx.app.searcher.type
+		});
+
+		Gx.app.bookmarkView.save();
 	};
 
 	// Set short-cut keys
@@ -218,19 +258,19 @@ $(function() {
 			'target': document
 		};
 		shortcut.add('Shift+PageUp', function() {
-			app.mapView.setZoom(app.mapView.getZoom() + 1);
+			Gx.app.mapView.setZoom(Gx.app.mapView.getZoom() + 1);
 		}, opts);
 		shortcut.add('Shift+PageDown', function() {
-			app.mapView.setZoom(app.mapView.getZoom() - 1);
+			Gx.app.mapView.setZoom(Gx.app.mapView.getZoom() - 1);
 		}, opts);
 		shortcut.add('Ctrl+Enter', function() {
-			app.infoView.toggle();
+			Gx.app.infoView.toggle();
 		}, opts);
 		shortcut.add('Ctrl+Q', function() {
-			app.searchView.focus();
+			Gx.app.searchView.focus();
 		}, opts);
 		shortcut.add('Ctrl+M', function() {
-			app.bookmarkView.toggleBookmark();
+			Gx.app.bookmarkView.toggleBookmark();
 		}, opts);
 
 	})();
@@ -239,7 +279,7 @@ $(function() {
 	(function(f) {
 		f();
 		$(window).resize(f);
-	})(_.bind(app.fixer, app));
+	})(_.bind(Gx.app.fixer, Gx.app));
 	// control box fixer
 	(function(el) {
 		var w = Array.prototype.slice.call(el.children()).map(function(child) {

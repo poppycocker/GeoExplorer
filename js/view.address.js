@@ -38,7 +38,6 @@
 		initialize: function(options) {
 			_.bindAll(this, 'render', 'remove');
 			this.template = options.template;
-			// this.template = _.template($('#tmpl_address_info').html());
 			this.model.bind('destroy', this.remove);
 		},
 		render: function() {

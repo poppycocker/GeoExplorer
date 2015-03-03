@@ -6,7 +6,7 @@
 			return Gx.mapTypes;
 		},
 		toggle: function() {
-			app.toggleMap(this.$el.val());
+			Gx.app.toggleMap(this.$el.val());
 		},
 	});
 }).call(this);

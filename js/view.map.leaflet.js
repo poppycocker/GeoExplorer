@@ -12,7 +12,7 @@
 			L.control.scale().addTo(this.map);
 			this.posMarker = null;
 		},
-		setListeners: function() {
+		setListeners: function(app) {
 			var map = this.map;
 			map.on('click', function(e) {
 				app.jump(Gx.latLng(e.latlng));
@@ -20,7 +20,7 @@
 			map.on('drag', _.bind(function() {
 				app.infoView.refreshBounds(this);
 			}, this));
-			map.on('moveend dragend zoomend', _.bind(this.updateQyeryString, this));
+			map.on('moveend dragend zoomend', _.bind(app.updateQyeryString, this));
 		},
 		clearMarker: function() {
 			if (this.posMarker) {

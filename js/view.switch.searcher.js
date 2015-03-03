@@ -6,7 +6,7 @@
 			return Gx.searcherTypes;
 		},
 		toggle: function() {
-			app.toggleSearcher(this.$el.val());
+			Gx.app.toggleSearcher(this.$el.val());
 		},
 	});
 }).call(this);

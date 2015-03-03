@@ -101,7 +101,7 @@
 			}
 		},
 		add: function() {
-			var latLng = app.mapView.map.getCenter();
+			var latLng = Gx.app.mapView.map.getCenter();
 			var val = this.$input.val();
 			if (val === '') {
 				return;
@@ -188,7 +188,7 @@
 			if (this.removeFlg) {
 				return;
 			}
-			app.jump(Gx.latLng(this.model.get('lat'), this.model.get('lng')), true);
+			Gx.app.jump(Gx.latLng(this.model.get('lat'), this.model.get('lng')), true);
 		},
 		onSelect: function() {
 			this.$el.addClass('bkm_li_hover');

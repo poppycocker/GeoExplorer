@@ -43,6 +43,7 @@
 		</div>
 	</div>
 	<div class="copyright">&copy; 2015 poppycocker. <a href="https://github.com/poppycocker/GeoExplorer" target="_blank">&gt;&gt; view on GitHub</a></div>
+
 	<script type=text/template id="tmpl_point_info">
 		1st,2nd MeshCode: <%= meshcode %><br>
 		<input type="text" value="<%= latLngStr %>" class="llstring"><br>
@@ -57,7 +58,7 @@
 	</script>
 
 	<script type=text/template id="tmpl_address_info_google">
-		<h3><%= address %></h3>
+		<h3><a href="#<%= latLng.getString() %>"><%= address %></a></h3>
 		<p>types: <%= types %></p>
 		<ul class="address_compo">
 			<% _.each(addressCompos, function(compo) { %>
@@ -67,7 +68,7 @@
 	</script>
 
 	<script type=text/template id="tmpl_address_info_nominatim">
-		<h3><img src="<%= icon %>"><%= display_name %></h3>
+		<h3><img src="<%= icon %>"><a href="#<%= latLng.getString() %>"><%= display_name %></a></h3>
 		<p>
 			osm_type: <%= osm_type %><br>
 			osm_id: <%= osm_id %><br>
