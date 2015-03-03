@@ -11,7 +11,7 @@
 				ls.setItem(key, JSON.stringify(val));
 			} else {
 				item = ls.getItem(key);
-				return item ? JSON.parse(item) : null;
+				return item ? JSON.parse(item) : undefined;
 			}
 		},
 		remove: function(key) {

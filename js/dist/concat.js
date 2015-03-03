@@ -21712,7 +21712,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				ls.setItem(key, JSON.stringify(val));
 			} else {
 				item = ls.getItem(key);
-				return item ? JSON.parse(item) : null;
+				return item ? JSON.parse(item) : undefined;
 			}
 		},
 		remove: function(key) {
