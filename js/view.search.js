@@ -7,7 +7,7 @@
 		},
 		initialize: function(options) {
 			_.bindAll(this, 'onSearch', 'focus');
-			this.searcher = options.searcher;
+			this.setSearcher(options.searcher);
 			this.$el.val('');
 		},
 		onSearch: function(e) {
@@ -18,6 +18,9 @@
 		},
 		focus: function() {
 			this.$el.focus().select();
+		},
+		setSearcher: function(searcher) {
+			this.searcher = searcher;
 		}
 	});
 }).call(this);

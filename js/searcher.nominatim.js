@@ -1,5 +1,4 @@
-;
-(function() {
+;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.SearcherNominatim = Gx.Searcher.extend({
 		options: {
@@ -8,6 +7,7 @@
 			dataType: 'json'
 		},
 		initialize: function(app) {
+			this.type = Gx.searcherTypes.nominatim.key;
 			this.app = app;
 		},
 		geocode: function(key, callback) {

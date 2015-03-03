@@ -6,10 +6,13 @@
 			L.Icon.Default.imagePath = 'images';
 			// Generate the Map, get last state from localStorage
 			var lastState = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
-			lastState.lat = lastState.lat || Gx.defaultState.lat;
-			lastState.lng = lastState.lng || Gx.defaultState.lng;
-			lastState.zoom = lastState.zoom || Gx.defaultState.zoom;
-			lastState.type = lastState.type || Gx.mapTypes.google.key;
+			lastState = _.defaults(lastState, {
+				lat: Gx.defaultState.lat,
+				lng: Gx.defaultState.lng,
+				zoom: Gx.defaultState.zoom,
+				mapType: Gx.mapTypes.google.key,
+				searcherType: Gx.searcherTypes.google.key
+			});
 			this.mapViews = [
 				new Gx.MapViewGoogle({
 					el: '#map_google',
@@ -24,11 +27,16 @@
 				})
 			];
 			this.mapView = _.findWhere(this.mapViews, {
-				type: lastState.type
+				type: lastState.mapType
 			});
 			this.setCurrentMapVisible();
-			// this.searcher = new Gx.SearcherGoogle(this);
-			this.searcher = new Gx.SearcherNominatim(this);
+			this.searchers = [
+				new Gx.SearcherGoogle(this),
+				new Gx.SearcherNominatim(this)
+			];
+			this.searcher = _.findWhere(this.searchers, {
+				type: lastState.searcherType
+			});
 			this.searchView = new Gx.SearchView({
 				searcher: this.searcher
 			});
@@ -38,7 +46,10 @@
 				view.setListeners();
 			});
 			this.mapSwitchView = new Gx.MapSwitchView({
-				initialType: lastState.type
+				initialType: lastState.mapType
+			});
+			this.searcherSwitchView = new Gx.SearcherSwitchView({
+				initialType: lastState.searcherType
 			});
 		},
 		jump: function(latLng, centering) {
@@ -112,6 +123,25 @@
 				v.show(v.cid === m.cid);
 			});
 		},
+		toggleSearcher: function(nextType) {
+			var current = this.searcher;
+			if (current.type === nextType) {
+				return;
+			}
+			var next = _.findWhere(this.searchers, {
+				type: nextType
+			});
+			if (!next) {
+				return;
+			}
+			this.searcher = next;
+			this.searchView.setSearcher(this.searcher);
+			var markerPos = this.mapView.getMarkerPos();
+			if (!markerPos) {
+				return;
+			}
+			this.jump(markerPos);
+		},
 		fixer: function() {
 			this.mapView.fix();
 			var info = this.infoView.$el.height(),
@@ -142,6 +172,7 @@ $(function() {
 		jump: function(query) {
 			query = query || '';
 			var states;
+			// if (query.match(/^(-{0,1}\d+\.{0,1}\d+,){2}\d+(,[A-z]){2}$/g)) {
 			if (query.match(/^(-{0,1}\d+\.{0,1}\d+,){2}\d+,[A-z]$/g)) {
 				states = this.splitQuery(query);
 				app.toggleMap(states.type);
@@ -165,7 +196,8 @@ $(function() {
 			return {
 				latLng: Gx.latLng(coords[0], coords[1]),
 				zoom: coords[2],
-				type: sp[3]
+				mapType: sp[3],
+				searcherType: sp[4]
 			};
 		}
 	});

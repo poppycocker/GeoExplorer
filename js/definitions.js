@@ -10,6 +10,16 @@
 			name: 'OpenStreetMap'
 		}
 	};
+	this.Gx.searcherTypes = {
+		google: {
+			key: 'g',
+			name: 'Google Geocoding API'
+		},
+		nominatim: {
+			key: 'n',
+			name: 'Nominatim'
+		}
+	};
 	this.Gx.defaultState = {
 		// Tokyo
 		lat: 35.5291699,

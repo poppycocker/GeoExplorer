@@ -21680,6 +21680,16 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			name: 'OpenStreetMap'
 		}
 	};
+	this.Gx.searcherTypes = {
+		google: {
+			key: 'g',
+			name: 'Google Geocoding API'
+		},
+		nominatim: {
+			key: 'n',
+			name: 'Nominatim'
+		}
+	};
 	this.Gx.defaultState = {
 		// Tokyo
 		lat: 35.5291699,
@@ -21883,11 +21893,11 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 	});
 
 }).call(this);
-;
-(function() {
+;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.SearcherGoogle = Gx.Searcher.extend({
 		initialize: function(app) {
+			this.type = Gx.searcherTypes.google.key;
 			this.app = app;
 			this.geocoder = new google.maps.Geocoder();
 		},
@@ -21953,8 +21963,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 	});
 
 }).call(this);
-;
-(function() {
+;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.SearcherNominatim = Gx.Searcher.extend({
 		options: {
@@ -21963,6 +21972,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			dataType: 'json'
 		},
 		initialize: function(app) {
+			this.type = Gx.searcherTypes.nominatim.key;
 			this.app = app;
 		},
 		geocode: function(key, callback) {
@@ -22042,7 +22052,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 		},
 		initialize: function(options) {
 			_.bindAll(this, 'onSearch', 'focus');
-			this.searcher = options.searcher;
+			this.setSearcher(options.searcher);
 			this.$el.val('');
 		},
 		onSearch: function(e) {
@@ -22053,6 +22063,9 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 		},
 		focus: function() {
 			this.$el.focus().select();
+		},
+		setSearcher: function(searcher) {
+			this.searcher = searcher;
 		}
 	});
 }).call(this);
@@ -22364,40 +22377,36 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 }).call(this);
 ;(function() {
 	this.Gx = this.Gx || {};
-	this.Gx.MapSwitchView = Backbone.View.extend({
-		el: '#mapswitch',
+	this.Gx.SwitchView = Backbone.View.extend({
 		events: {
 			'change': 'toggle'
 		},
 		initialize: function(options) {
 			_.bindAll(this, 'toggle');
-			this.collection = new Gx.MapSwitchUnitCollection();
+			this.collection = new Gx.SwitchUnitCollection();
+			var template = _.template($('#tmpl_switch_unit').html());
+			var types = this.getTypes();
 			// ここで追加
-			Object.keys(Gx.mapTypes).forEach(_.bind(function(p) {
-				var type = Gx.mapTypes[p];
-				var model = new Gx.MapSwitchUnitModel({
-					key: type.key,
-					mapName: type.name,
-				});
-				var view = new Gx.MapSwitchUnitView({
-					model: model
+			Object.keys(types).forEach(_.bind(function(p) {
+				var type = types[p];
+				var model = new Gx.SwitchUnitModel(type);
+				var view = new Gx.SwitchUnitView({
+					model: model,
+					template: template
 				});
 				this.$el.append(view.render().$el);
 				this.collection.add(model);
 			}, this));
 			this.setOption(options.initialType);
 		},
-		toggle: function() {
-			app.toggleMap(this.$el.val());
-		},
 		setOption: function(type) {
 			this.$el.val(type);
 		}
 	});
-	this.Gx.MapSwitchUnitView = Backbone.View.extend({
+	this.Gx.SwitchUnitView = Backbone.View.extend({
 		tagName: 'option',
-		initialize: function() {
-			this.template = _.template($('#tmpl_map_switch_unit').html());
+		initialize: function(options) {
+			this.template = options.template;
 			this.model.bind('change', this.render);
 		},
 		render: function() {
@@ -22405,6 +22414,30 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				value: this.model.get('key')
 			});
 			return this;
+		},
+	});
+}).call(this);
+;(function() {
+	this.Gx = this.Gx || {};
+	this.Gx.MapSwitchView = Gx.SwitchView.extend({
+		el: '#map-switch',
+		getTypes: function() {
+			return Gx.mapTypes;
+		},
+		toggle: function() {
+			app.toggleMap(this.$el.val());
+		},
+	});
+}).call(this);
+;(function() {
+	this.Gx = this.Gx || {};
+	this.Gx.SearcherSwitchView = Gx.SwitchView.extend({
+		el: '#searcher-switch',
+		getTypes: function() {
+			return Gx.searcherTypes;
+		},
+		toggle: function() {
+			app.toggleSearcher(this.$el.val());
 		},
 	});
 }).call(this);
@@ -22713,15 +22746,15 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 }).call(this);
 ;(function() {
 	this.Gx = this.Gx || {};
-	this.Gx.MapSwitchUnitModel = Backbone.Model.extend({
+	this.Gx.SwitchUnitModel = Backbone.Model.extend({
 		defaults: function() {
 			return {
 				key: '',
-				mapName: ''
+				name: ''
 			};
 		}
 	});
-	this.Gx.MapSwitchUnitCollection = Backbone.Collection.extend({});
+	this.Gx.SwitchUnitCollection = Backbone.Collection.extend({});
 }).call(this);
 ;(function() {
 	this.Gx = this.Gx || {};
@@ -22812,10 +22845,13 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			L.Icon.Default.imagePath = 'images';
 			// Generate the Map, get last state from localStorage
 			var lastState = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
-			lastState.lat = lastState.lat || Gx.defaultState.lat;
-			lastState.lng = lastState.lng || Gx.defaultState.lng;
-			lastState.zoom = lastState.zoom || Gx.defaultState.zoom;
-			lastState.type = lastState.type || Gx.mapTypes.google.key;
+			lastState = _.defaults(lastState, {
+				lat: Gx.defaultState.lat,
+				lng: Gx.defaultState.lng,
+				zoom: Gx.defaultState.zoom,
+				mapType: Gx.mapTypes.google.key,
+				searcherType: Gx.searcherTypes.google.key
+			});
 			this.mapViews = [
 				new Gx.MapViewGoogle({
 					el: '#map_google',
@@ -22830,11 +22866,16 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				})
 			];
 			this.mapView = _.findWhere(this.mapViews, {
-				type: lastState.type
+				type: lastState.mapType
 			});
 			this.setCurrentMapVisible();
-			// this.searcher = new Gx.SearcherGoogle(this);
-			this.searcher = new Gx.SearcherNominatim(this);
+			this.searchers = [
+				new Gx.SearcherGoogle(this),
+				new Gx.SearcherNominatim(this)
+			];
+			this.searcher = _.findWhere(this.searchers, {
+				type: lastState.searcherType
+			});
 			this.searchView = new Gx.SearchView({
 				searcher: this.searcher
 			});
@@ -22844,7 +22885,10 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				view.setListeners();
 			});
 			this.mapSwitchView = new Gx.MapSwitchView({
-				initialType: lastState.type
+				initialType: lastState.mapType
+			});
+			this.searcherSwitchView = new Gx.SearcherSwitchView({
+				initialType: lastState.searcherType
 			});
 		},
 		jump: function(latLng, centering) {
@@ -22918,6 +22962,25 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				v.show(v.cid === m.cid);
 			});
 		},
+		toggleSearcher: function(nextType) {
+			var current = this.searcher;
+			if (current.type === nextType) {
+				return;
+			}
+			var next = _.findWhere(this.searchers, {
+				type: nextType
+			});
+			if (!next) {
+				return;
+			}
+			this.searcher = next;
+			this.searchView.setSearcher(this.searcher);
+			var markerPos = this.mapView.getMarkerPos();
+			if (!markerPos) {
+				return;
+			}
+			this.jump(markerPos);
+		},
 		fixer: function() {
 			this.mapView.fix();
 			var info = this.infoView.$el.height(),
@@ -22948,6 +23011,7 @@ $(function() {
 		jump: function(query) {
 			query = query || '';
 			var states;
+			// if (query.match(/^(-{0,1}\d+\.{0,1}\d+,){2}\d+(,[A-z]){2}$/g)) {
 			if (query.match(/^(-{0,1}\d+\.{0,1}\d+,){2}\d+,[A-z]$/g)) {
 				states = this.splitQuery(query);
 				app.toggleMap(states.type);
@@ -22971,7 +23035,8 @@ $(function() {
 			return {
 				latLng: Gx.latLng(coords[0], coords[1]),
 				zoom: coords[2],
-				type: sp[3]
+				mapType: sp[3],
+				searcherType: sp[4]
 			};
 		}
 	});

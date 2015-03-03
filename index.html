@@ -9,14 +9,16 @@
 	<script src="js/dist/concat.js"></script>
 </head>
 <body>
-	<h1>Geo-Explorer</h1>
 	<div id="wrapper">
 		<div id="map_google"><!-- google map --></div>
 		<div id="map_osm"><!-- leaflet --></div>
 		<div id="controls" class="clearfix">
 			<div id="search_box" class="control-elm">
 				<span class="typcn typcn-zoom icon-search"></span>
-				<input id="input_address" class="round" type="textbox" placeholder="Enter to Geocode">
+				<input id="input_address" class="round" type="textbox" placeholder="Press Enter to Geocode">
+			</div>
+			<div class="control-elm">
+				<select id="searcher-switch" class="gx-switch ease-transition round"></select>
 			</div>
 			<div id="bookmark_box" class="control-elm">
 				<span id="btn_bookmark" class="typcn typcn-bookmark icon-bookmark round" title="Ctrl+M to open/close"></span>
@@ -28,8 +30,8 @@
 					<ul></ul>
 				</div>
 			</div>
-			<div id="switch_box" class="control-elm">
-				<select id="mapswitch" class="ease-transition round"></select>
+			<div class="control-elm">
+				<select id="map-switch" class="gx-switch ease-transition round"></select>
 			</div>
 		</div>
 		<div id="informations">
@@ -85,8 +87,8 @@
 		<span class="typcn typcn-delete icon-delete-bookmark"></span>
 	</script>
 
-	<script type=text/template id="tmpl_map_switch_unit">
-		<%= mapName %>
+	<script type=text/template id="tmpl_switch_unit">
+		<%= name %>
 	</script>
 </body>
 </html>

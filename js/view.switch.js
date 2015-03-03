@@ -1,39 +1,35 @@
 ;(function() {
 	this.Gx = this.Gx || {};
-	this.Gx.MapSwitchView = Backbone.View.extend({
-		el: '#mapswitch',
+	this.Gx.SwitchView = Backbone.View.extend({
 		events: {
 			'change': 'toggle'
 		},
 		initialize: function(options) {
 			_.bindAll(this, 'toggle');
-			this.collection = new Gx.MapSwitchUnitCollection();
+			this.collection = new Gx.SwitchUnitCollection();
+			var template = _.template($('#tmpl_switch_unit').html());
+			var types = this.getTypes();
 			// ここで追加
-			Object.keys(Gx.mapTypes).forEach(_.bind(function(p) {
-				var type = Gx.mapTypes[p];
-				var model = new Gx.MapSwitchUnitModel({
-					key: type.key,
-					mapName: type.name,
-				});
-				var view = new Gx.MapSwitchUnitView({
-					model: model
+			Object.keys(types).forEach(_.bind(function(p) {
+				var type = types[p];
+				var model = new Gx.SwitchUnitModel(type);
+				var view = new Gx.SwitchUnitView({
+					model: model,
+					template: template
 				});
 				this.$el.append(view.render().$el);
 				this.collection.add(model);
 			}, this));
 			this.setOption(options.initialType);
 		},
-		toggle: function() {
-			app.toggleMap(this.$el.val());
-		},
 		setOption: function(type) {
 			this.$el.val(type);
 		}
 	});
-	this.Gx.MapSwitchUnitView = Backbone.View.extend({
+	this.Gx.SwitchUnitView = Backbone.View.extend({
 		tagName: 'option',
-		initialize: function() {
-			this.template = _.template($('#tmpl_map_switch_unit').html());
+		initialize: function(options) {
+			this.template = options.template;
 			this.model.bind('change', this.render);
 		},
 		render: function() {

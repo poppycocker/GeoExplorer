@@ -1,8 +1,8 @@
-;
-(function() {
+;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.SearcherGoogle = Gx.Searcher.extend({
 		initialize: function(app) {
+			this.type = Gx.searcherTypes.google.key;
 			this.app = app;
 			this.geocoder = new google.maps.Geocoder();
 		},
