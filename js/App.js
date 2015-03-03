@@ -27,7 +27,8 @@
 				type: lastState.type
 			});
 			this.setCurrentMapVisible();
-			this.searcher = new Gx.Searcher(this);
+			// this.searcher = new Gx.SearcherGoogle(this);
+			this.searcher = new Gx.SearcherNominatim(this);
 			this.searchView = new Gx.SearchView({
 				searcher: this.searcher
 			});
@@ -48,7 +49,7 @@
 			});
 			this.searcher.geocode(latLng, _.bind(function(results) {
 				this.render({
-					geocodeResults: results
+					geocodeResults: this.searcher.generateModels(results, latLng)
 				});
 			}, this));
 			this.bookmarkView.hide();

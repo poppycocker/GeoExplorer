@@ -19,6 +19,9 @@
 			},
 			getLeaflet: function() {
 				return L.latLng(this.lat, this.lng);
+			},
+			getString: function() {
+				return [this.lat, this.lng].join(', ');
 			}
 		};
 		return c;

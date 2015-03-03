@@ -54,6 +54,8 @@ module.exports = function(grunt) {
                     'js/utils.js',
                     'js/latlng.js',
                     'js/searcher.js',
+                    'js/searcher.google.js',
+                    'js/searcher.nominatim.js',
                     'js/view.search.js',
                     'js/bookmarks.js',
                     'js/view.bookmark.js',
@@ -67,6 +69,8 @@ module.exports = function(grunt) {
                     'js/model.mapSwitch.js',
                     'js/model.position.js',
                     'js/model.address.js',
+                    'js/model.address.google.js',
+                    'js/model.address.nominatim.js',
                     'js/app.js',
                 ],
                 // 出力ファイルの指定

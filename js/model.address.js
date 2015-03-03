@@ -1,13 +1,7 @@
 ;(function() {
 	this.Gx = this.Gx || {};
-	this.Gx.AddressModel = Backbone.Model.extend({
-		defaults: function() {
-			return {
-				address: '',
-				types: '',
-				addressCompos: []
-			};
-		}
+	this.Gx.AddressModel = Backbone.Model.extend();
+	this.Gx.AddressCollection = Backbone.Collection.extend({
+		model: Gx.AddressModel
 	});
-	this.Gx.AddressCollection = Backbone.Collection.extend();
 }).call(this);

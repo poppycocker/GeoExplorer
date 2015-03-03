@@ -22,20 +22,20 @@
 			var r = Gx.Utils.round;
 			this.centerInfoView.model.setAttrs(mapView.getCenter(), mapView.getZoom(), mapView.type);
 		},
-		setGeocodeResult: function(results, mapType) {
-			var latLng;
-			var r = Gx.Utils.round;
-			if (results[0] && results[0].geometry) {
-				latLng = Gx.latLng(results[0].geometry.location);
+		setGeocodeResult: function(models, mapType) {
+			var m = models[0], latLng;
+			if (!m) {
+				return;
 			}
+			latLng = m.get('latLng');
 			if (latLng) {
 				this.clickedPointView.model.setAttrs(latLng, null, mapType);
 			}
 			// clear all
 			this.addressResultsView.clear();
-			// add results
-			_.each(results, function(result) {
-				this.addressResultsView.add(result);
+			// add models
+			_.each(models, function(model) {
+				this.addressResultsView.add(model);
 			}, this);
 		},
 		toggle: function() {

@@ -5,28 +5,25 @@
 		initialize: function() {
 			_.bindAll(this, 'render', 'add', 'clear');
 			this.collection.bind('add', this.render);
+			this.tmplGoogle = _.template($('#tmpl_address_info_google').html());
+			this.tmplNominatim = _.template($('#tmpl_address_info_nominatim').html());
 		},
 		render: function(model) {
 			var view = new Gx.AddressUnitView({
-				model: model
+				model: model,
+				template: this.getTemplate(model)
 			});
 			this.$el.append(view.render().$el);
 			return this;
 		},
-		add: function(data) {
-			if (!data.formatted_address) {
-				return;
+		getTemplate: function(model) {
+			if (model instanceof Gx.AddressModelGoogle) {
+				return this.tmplGoogle;
+			} else if (model instanceof Gx.AddressModelNominatim) {
+				return this.tmplNominatim;
 			}
-			var model = new Gx.AddressModel({
-				address: data.formatted_address,
-				types: data.types.join(', '),
-				addressCompos: data.address_components.map(function(compo) {
-					return {
-						types: compo.types.join(', '),
-						longName: compo.long_name
-					};
-				})
-			});
+		},
+		add: function(model) {
 			this.collection.add(model);
 		},
 		clear: function() {
@@ -38,9 +35,10 @@
 	});
 	this.Gx.AddressUnitView = Backbone.View.extend({
 		tagName: 'div',
-		initialize: function() {
+		initialize: function(options) {
 			_.bindAll(this, 'render', 'remove');
-			this.template = _.template($('#tmpl_address_info').html());
+			this.template = options.template;
+			// this.template = _.template($('#tmpl_address_info').html());
 			this.model.bind('destroy', this.remove);
 		},
 		render: function() {

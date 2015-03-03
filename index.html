@@ -6,7 +6,7 @@
 	<link rel="stylesheet" href="css/dist/typicons/typicons.min.css">
 	<link rel="stylesheet" href="css/dist/min.css" media="all">
 	<script src="http://maps.google.com/maps/api/js?sensor=false&language=en"></script>
-	<script src="js/dist/app-min.js"></script>
+	<script src="js/dist/concat.js"></script>
 </head>
 <body>
 	<h1>Geo-Explorer</h1>
@@ -54,12 +54,28 @@
 		<a href="https://openstreetmap.jp/map#zoom=<%= zoom %>&lat=<%= lat %>&lon=<%= lng %>&layers=00B" target="_blank">&gt;&gt;OpenStreetMap.jp</script>
 	</script>
 
-	<script type=text/template id="tmpl_address_info">
+	<script type=text/template id="tmpl_address_info_google">
 		<h3><%= address %></h3>
 		<p>types: <%= types %></p>
 		<ul class="address_compo">
 			<% _.each(addressCompos, function(compo) { %>
 				<li><%= compo.types %>: <em><%= compo.longName %></em></li>
+			<% }); %>
+		</ul>
+	</script>
+
+	<script type=text/template id="tmpl_address_info_nominatim">
+		<h3><img src="<%= icon %>"><%= display_name %></h3>
+		<p>
+			osm_type: <%= osm_type %><br>
+			osm_id: <%= osm_id %><br>
+			place_id: <%= place_id %><br>
+			type: <%= type %><br>
+			class: <%= cls %>
+		</p>
+		<ul class="address_compo">
+			<% _.each(address, function(compo) { %>
+				<li><%= compo.type %>: <em><%= compo.val %></em></li>
 			<% }); %>
 		</ul>
 	</script>
