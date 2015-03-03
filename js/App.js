@@ -6,14 +6,7 @@
 			_.bindAll(this, 'updateQyeryString')
 			L.Icon.Default.imagePath = 'images';
 			// Generate the Map, get last state from localStorage
-			var lastState = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
-			lastState = _.defaults(lastState, {
-				lat: Gx.defaultState.lat,
-				lng: Gx.defaultState.lng,
-				zoom: Gx.defaultState.zoom,
-				mapType: Gx.mapTypes.google.key,
-				searcherType: Gx.searcherTypes.google.key
-			});
+			var lastState = this.getLastState();
 			this.mapViews = [
 				new Gx.MapViewGoogle({
 					el: '#map_google',
@@ -51,6 +44,19 @@
 			});
 			this.searcherSwitchView = new Gx.SearcherSwitchView({
 				initialType: lastState.searcherType
+			});
+		},
+		getLastState: function() {
+			var state = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
+			state = _.pick(state, function(v, k, o) {
+				return v !== null;
+			})
+			return _.defaults(state, {
+				lat: Gx.defaultState.lat,
+				lng: Gx.defaultState.lng,
+				zoom: Gx.defaultState.zoom,
+				mapType: Gx.mapTypes.google.key,
+				searcherType: Gx.searcherTypes.google.key
 			});
 		},
 		jump: function(latLng, centering) {

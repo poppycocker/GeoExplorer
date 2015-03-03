@@ -8,10 +8,12 @@
 				return null;
 			}
 			if (val) {
+				// write
 				ls.setItem(key, JSON.stringify(val));
 			} else {
+				// read
 				item = ls.getItem(key);
-				return item ? JSON.parse(item) : undefined;
+				return item ? JSON.parse(item) : null;
 			}
 		},
 		remove: function(key) {

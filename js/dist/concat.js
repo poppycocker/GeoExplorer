@@ -21709,10 +21709,12 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				return null;
 			}
 			if (val) {
+				// write
 				ls.setItem(key, JSON.stringify(val));
 			} else {
+				// read
 				item = ls.getItem(key);
-				return item ? JSON.parse(item) : undefined;
+				return item ? JSON.parse(item) : null;
 			}
 		},
 		remove: function(key) {
@@ -22822,14 +22824,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			_.bindAll(this, 'updateQyeryString')
 			L.Icon.Default.imagePath = 'images';
 			// Generate the Map, get last state from localStorage
-			var lastState = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
-			lastState = _.defaults(lastState, {
-				lat: Gx.defaultState.lat,
-				lng: Gx.defaultState.lng,
-				zoom: Gx.defaultState.zoom,
-				mapType: Gx.mapTypes.google.key,
-				searcherType: Gx.searcherTypes.google.key
-			});
+			var lastState = this.getLastState();
 			this.mapViews = [
 				new Gx.MapViewGoogle({
 					el: '#map_google',
@@ -22867,6 +22862,19 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			});
 			this.searcherSwitchView = new Gx.SearcherSwitchView({
 				initialType: lastState.searcherType
+			});
+		},
+		getLastState: function() {
+			var state = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
+			state = _.pick(state, function(v, k, o) {
+				return v !== null;
+			})
+			return _.defaults(state, {
+				lat: Gx.defaultState.lat,
+				lng: Gx.defaultState.lng,
+				zoom: Gx.defaultState.zoom,
+				mapType: Gx.mapTypes.google.key,
+				searcherType: Gx.searcherTypes.google.key
 			});
 		},
 		jump: function(latLng, centering) {
