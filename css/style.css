@@ -26,23 +26,6 @@ p
     padding: .5em .8em .5em 1.0em;
 }
 
-h1
-{
-    font-size: 2em;
-
-    position: fixed;
-    z-index: 65536;
-    top: 2%;
-    left: 3em;
-
-    display: block;
-
-    padding: 0;
-
-    color: white;
-    text-shadow: 2px 2px 5px black;
-}
-
 h2
 {
     font-size: 1.2em;
@@ -99,11 +82,9 @@ a
     position: fixed;
     z-index: 65536;
     top: 2.5%;
-    right: 0;
-    left: 0;
+    left: 100px;
 
     height: 1.1em;
-    margin: 0 auto;
 }
 
 #search_box
@@ -126,7 +107,7 @@ a
 {
     font-size: 1.5em;
 
-    width: 10em;
+    width: 14em;
     height: 100%;
     padding: .2em .2em .2em 2.1em;
 
@@ -315,15 +296,15 @@ a
     background-color: rgba(255, 255, 255, .6);
 }
 
-#mapswitch
+.gx-switch
 {
     /*font-family:arial,tahoma;*/
     font-size: 16px;
     font-weight: bold;
 
-    width: 10em;
+    width: auto;
     height: 1.83em;
-    padding: .25em;
+    padding: .25em 1.25em .25em .25em;
 
     text-align: center;
 
@@ -340,7 +321,7 @@ a
     -webkit-appearance: none;
 }
 
-#mapswitch option
+.gx-switch option
 {
     padding: .2em 0;
 }
@@ -358,16 +339,16 @@ a
             transition: .3s ease all;
 }
 
-#mapswitch,
+.gx-switch,
 .icon-bookmark
 {
     height: 100%;
-    margin-left: 16px;
+    margin-left: 8px;
 
     background-color: #3498db;
 }
 
-#mapswitch:hover,
+.gx-switch:hover,
 .icon-bookmark:hover
 {
     background-color: #2980b9;

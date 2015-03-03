@@ -21,7 +21,7 @@
 			this.map = new google.maps.Map(this.$el.get(0), mapOpts);
 			this.posMarker = null;
 		},
-		setListeners: function() {
+		setListeners: function(app) {
 			var map = this.map;
 			google.maps.event.addListener(map, 'click', function(me) {
 				app.jump(Gx.latLng(me.latLng));
@@ -29,7 +29,7 @@
 			google.maps.event.addListener(map, 'bounds_changed', _.bind(function() {
 				app.infoView.refreshBounds(this);
 			}, this));
-			google.maps.event.addListener(map, 'idle', _.bind(this.updateQyeryString, this));
+			google.maps.event.addListener(map, 'idle', _.bind(app.updateQyeryString, this));
 		},
 		clearMarker: function() {
 			if (this.posMarker) {

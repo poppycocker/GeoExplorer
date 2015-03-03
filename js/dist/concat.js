@@ -21680,6 +21680,16 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			name: 'OpenStreetMap'
 		}
 	};
+	this.Gx.searcherTypes = {
+		google: {
+			key: 'g',
+			name: 'Google Geocoding API'
+		},
+		nominatim: {
+			key: 'n',
+			name: 'Nominatim'
+		}
+	};
 	this.Gx.defaultState = {
 		// Tokyo
 		lat: 35.5291699,
@@ -21735,6 +21745,9 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			},
 			getLeaflet: function() {
 				return L.latLng(this.lat, this.lng);
+			},
+			getString: function() {
+				return [this.lat, this.lng].join(', ');
 			}
 		};
 		return c;
@@ -21836,93 +21849,199 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 }).call(Gx.LatLng);
 ;(function() {
 	this.Gx = this.Gx || {};
-	this.Gx.Searcher = (function() {
-		var c = function(app) {
-			this.app = app;
-			this.geocoder = new google.maps.Geocoder();
-		};
-		c.prototype = {
-			search: function(key) {
-				var coord = this.getLatLngFromString(key);
-				if (coord.OK) {
-					key = Gx.latLng(coord.lat, coord.lng);
-					this.app.render({
-						centerPos: key,
-						markerPos: key
-					});
-				}
-
-				this.geocode(key, _.bind(function(results) {
-					var latLng;
-					if (results[0] && results[0].geometry) {
-						latLng = Gx.latLng(results[0].geometry.location);
-					}
-					if (!coord.OK && latLng) {
-						this.app.render({
-							centerPos: latLng,
-							markerPos: latLng
-						});
-					}
-					this.app.render({
-						geocodeResults: results,
-						bookmarkTitle: key
-					});
-				}, this));
-			},
-			geocode: function(key, callback) {
-				var q = {};
-				if (key instanceof Gx.LatLng) {
-					q.latLng = key.getGoogle();
-				} else {
-					q.address = key;
-				}
-
-				this.geocoder.geocode(q, function(results, status) {
-					if (status !== google.maps.GeocoderStatus.OK) {
-						results = [];
-						if (q.latLng) {
-							results.push({
-								geometry: {
-									location: q.latLng
-								}
-							});
-						}
-					}
-					callback(results);
+	this.Gx.Searcher = L.Class.extend({
+		search: function(key) {
+			var coord = this.getLatLngFromString(key);
+			if (coord.OK) {
+				key = Gx.latLng(coord.lat, coord.lng);
+				this.app.render({
+					centerPos: key,
+					markerPos: key
 				});
-			},
-			getLatLngFromString: function(llStr) {
-				var translated, tmp1 = llStr.replace('北緯', 'N').replace('南緯', 'S').replace('西経', 'W').replace('東経', 'E').trim(),
-					tmp2 = llStr.replace(/\.|,|\'/g, ' ').replace(/"/g, '').replace('N', 'N ').replace('S', 'S ').replace('E', 'E ').replace('W', 'W ');
-				var tmp2idx = tmp2.search(/N|S/);
-				tmp2 = tmp2.substr(tmp2idx) + '00 ' + tmp2.substr(0, tmp2idx - 1) + '00';
-				if (tmp1.match(/(N|S)(\s\d{1,3}){4}\s(E|W)(\s\d{1,3}){3,4}/)) {
-					translated = tmp1;
-				} else if (tmp2.match(/(N|S)(\s\d{1,3}){4}\s(E|W)(\s\d{1,3}){3,4}/)) {
-					translated = tmp2;
-				} else {
-					return {
-						lat: 0,
-						lng: 0,
-						OK: false
-					};
-				}
-
-				var ar = translated.split(' ').map(function(v) {
-					return parseInt(v, 10);
-				});
-				var lat = ar[1] + ar[2] / 60 + ar[3] / 3600 + ar[4] / 3600 / 1000;
-				var lng = ar[6] + ar[7] / 60 + ar[8] / 3600 + (ar[9] ? ar[9] / 3600 / 1000 : 0);
-
+			}
+			this.geocode(key, _.bind(this.geocodeCallback, this));
+		},
+		getLatLngFromString: function(llStr) {
+			var translated, tmp1 = llStr.replace('北緯', 'N').replace('南緯', 'S').replace('西経', 'W').replace('東経', 'E').trim(),
+				tmp2 = llStr.replace(/\.|,|\'/g, ' ').replace(/"/g, '').replace('N', 'N ').replace('S', 'S ').replace('E', 'E ').replace('W', 'W ');
+			var tmp2idx = tmp2.search(/N|S/);
+			tmp2 = tmp2.substr(tmp2idx) + '00 ' + tmp2.substr(0, tmp2idx - 1) + '00';
+			if (tmp1.match(/(N|S)(\s\d{1,3}){4}\s(E|W)(\s\d{1,3}){3,4}/)) {
+				translated = tmp1;
+			} else if (tmp2.match(/(N|S)(\s\d{1,3}){4}\s(E|W)(\s\d{1,3}){3,4}/)) {
+				translated = tmp2;
+			} else {
 				return {
-					lat: (translated.match(/S/)) ? lat * (-1) : lat,
-					lng: (translated.match(/W/)) ? lng * (-1) : lng,
-					OK: true
+					lat: 0,
+					lng: 0,
+					OK: false
 				};
 			}
-		};
-		return c;
-	})();
+
+			var ar = translated.split(' ').map(function(v) {
+				return parseInt(v, 10);
+			});
+			var lat = ar[1] + ar[2] / 60 + ar[3] / 3600 + ar[4] / 3600 / 1000;
+			var lng = ar[6] + ar[7] / 60 + ar[8] / 3600 + (ar[9] ? ar[9] / 3600 / 1000 : 0);
+
+			return {
+				lat: (translated.match(/S/)) ? lat * (-1) : lat,
+				lng: (translated.match(/W/)) ? lng * (-1) : lng,
+				OK: true
+			};
+		}
+	});
+
+}).call(this);
+;(function() {
+	this.Gx = this.Gx || {};
+	this.Gx.SearcherGoogle = Gx.Searcher.extend({
+		initialize: function(app) {
+			this.type = Gx.searcherTypes.google.key;
+			this.app = app;
+			this.geocoder = new google.maps.Geocoder();
+		},
+		geocode: function(key, callback) {
+			var q = {};
+			var isLatLng = key instanceof Gx.LatLng;
+			if (isLatLng) {
+				q.latLng = key.getGoogle();
+			} else {
+				q.address = key;
+			}
+			this.geocoder.geocode(q, function(results, status) {
+				if (status !== google.maps.GeocoderStatus.OK) {
+					results = [];
+					if (q.latLng) {
+						results.push({
+							geometry: {
+								location: q.latLng
+							}
+						});
+					}
+				}
+				callback(results, key, isLatLng);
+			});
+		},
+		geocodeCallback: function(results, key, isLatLng) {
+			var latLng;
+			if (results[0] && results[0].geometry) {
+				latLng = Gx.latLng(results[0].geometry.location);
+			}
+			if (!isLatLng && latLng) {
+				this.app.render({
+					centerPos: latLng,
+					markerPos: latLng
+				});
+			}
+			this.app.render({
+				geocodeResults: this.generateModels(results),
+				bookmarkTitle: key
+			});
+		},
+		generateModels: function(results) {
+			return _.map(results, function(result) {
+				return new Gx.AddressModelGoogle({
+					latLng: this.getLatLngFromResult(result),
+					address: result.formatted_address,
+					types: result.types.join(', '),
+					addressCompos: result.address_components.map(function(compo) {
+						return {
+							types: compo.types.join(', '),
+							longName: compo.long_name
+						};
+					})
+				});
+			}, this);
+		},
+		getLatLngFromResult: function(result) {
+			if (!result.geometry) {
+				return null;
+			}
+			return Gx.latLng(result.geometry.location);
+		}
+	});
+
+}).call(this);
+;(function() {
+	this.Gx = this.Gx || {};
+	this.Gx.SearcherNominatim = Gx.Searcher.extend({
+		options: {
+			url: 'http://nominatim.openstreetmap.org/',
+			type: 'GET',
+			dataType: 'json'
+		},
+		initialize: function(app) {
+			this.type = Gx.searcherTypes.nominatim.key;
+			this.app = app;
+		},
+		geocode: function(key, callback) {
+			var isLatLng = key instanceof Gx.LatLng;
+			if (isLatLng) {
+				key = key.getString();
+			}
+			$.ajax({
+				url: this.options.url,
+				type: this.options.type,
+				dataType: this.options.dataType,
+				data: {
+					format: this.options.dataType,
+					addressdetails: 1,
+					// limit: 1,
+					q: key
+				},
+				success: function(data, status) {
+					callback(data, key, isLatLng);
+				},
+				error: function() {
+
+				}
+			});
+		},
+		geocodeCallback: function(results, key, isLatLng) {
+			var result = results[0];
+			var latLng;
+			if (result.lat && result.lon) {
+				latLng = Gx.latLng(result.lat, result.lon);
+			}
+			if (!isLatLng && latLng) {
+				this.app.render({
+					centerPos: latLng,
+					markerPos: latLng
+				});
+			}
+			this.app.render({
+				geocodeResults: this.generateModels(results),
+				bookmarkTitle: key
+			});
+		},
+		generateModels: function(results) {
+			return _.map(results, function(result) {
+				return new Gx.AddressModelNominatim({
+					latLng: this.getLatLngFromResult(result),
+					osm_type: result.osm_type,
+					osm_id: result.osm_id,
+					place_id: result.place_id,
+					type: result.type,
+					cls: result.cls,
+					icon: result.icon,
+					display_name: result.display_name,
+					address: Object.keys(result.address).map(function(p) {
+						return {
+							type: p,
+							val: result.address[p]
+						};
+					})
+				});
+			}, this);
+		},
+		getLatLngFromResult: function(result) {
+			if (result.lat && result.lon) {
+				return Gx.latLng(result.lat, result.lon);
+			}
+		}
+	});
+
 }).call(this);
 ;(function() {
 	this.Gx = this.Gx || {};
@@ -21933,7 +22052,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 		},
 		initialize: function(options) {
 			_.bindAll(this, 'onSearch', 'focus');
-			this.searcher = options.searcher;
+			this.setSearcher(options.searcher);
 			this.$el.val('');
 		},
 		onSearch: function(e) {
@@ -21944,6 +22063,9 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 		},
 		focus: function() {
 			this.$el.focus().select();
+		},
+		setSearcher: function(searcher) {
+			this.searcher = searcher;
 		}
 	});
 }).call(this);
@@ -22150,7 +22272,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			}
 		},
 		add: function() {
-			var latLng = app.mapView.map.getCenter();
+			var latLng = Gx.app.mapView.map.getCenter();
 			var val = this.$input.val();
 			if (val === '') {
 				return;
@@ -22237,7 +22359,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			if (this.removeFlg) {
 				return;
 			}
-			app.jump(Gx.latLng(this.model.get('lat'), this.model.get('lng')), true);
+			Gx.app.jump(Gx.latLng(this.model.get('lat'), this.model.get('lng')), true);
 		},
 		onSelect: function() {
 			this.$el.addClass('bkm_li_hover');
@@ -22255,40 +22377,36 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 }).call(this);
 ;(function() {
 	this.Gx = this.Gx || {};
-	this.Gx.MapSwitchView = Backbone.View.extend({
-		el: '#mapswitch',
+	this.Gx.SwitchView = Backbone.View.extend({
 		events: {
 			'change': 'toggle'
 		},
 		initialize: function(options) {
 			_.bindAll(this, 'toggle');
-			this.collection = new Gx.MapSwitchUnitCollection();
+			this.collection = new Gx.SwitchUnitCollection();
+			var template = _.template($('#tmpl_switch_unit').html());
+			var types = this.getTypes();
 			// ここで追加
-			Object.keys(Gx.mapTypes).forEach(_.bind(function(p) {
-				var type = Gx.mapTypes[p];
-				var model = new Gx.MapSwitchUnitModel({
-					key: type.key,
-					mapName: type.name,
-				});
-				var view = new Gx.MapSwitchUnitView({
-					model: model
+			Object.keys(types).forEach(_.bind(function(p) {
+				var type = types[p];
+				var model = new Gx.SwitchUnitModel(type);
+				var view = new Gx.SwitchUnitView({
+					model: model,
+					template: template
 				});
 				this.$el.append(view.render().$el);
 				this.collection.add(model);
 			}, this));
 			this.setOption(options.initialType);
 		},
-		toggle: function() {
-			app.toggleMap(this.$el.val());
-		},
 		setOption: function(type) {
 			this.$el.val(type);
 		}
 	});
-	this.Gx.MapSwitchUnitView = Backbone.View.extend({
+	this.Gx.SwitchUnitView = Backbone.View.extend({
 		tagName: 'option',
-		initialize: function() {
-			this.template = _.template($('#tmpl_map_switch_unit').html());
+		initialize: function(options) {
+			this.template = options.template;
 			this.model.bind('change', this.render);
 		},
 		render: function() {
@@ -22296,6 +22414,30 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				value: this.model.get('key')
 			});
 			return this;
+		},
+	});
+}).call(this);
+;(function() {
+	this.Gx = this.Gx || {};
+	this.Gx.MapSwitchView = Gx.SwitchView.extend({
+		el: '#map-switch',
+		getTypes: function() {
+			return Gx.mapTypes;
+		},
+		toggle: function() {
+			Gx.app.toggleMap(this.$el.val());
+		},
+	});
+}).call(this);
+;(function() {
+	this.Gx = this.Gx || {};
+	this.Gx.SearcherSwitchView = Gx.SwitchView.extend({
+		el: '#searcher-switch',
+		getTypes: function() {
+			return Gx.searcherTypes;
+		},
+		toggle: function() {
+			Gx.app.toggleSearcher(this.$el.val());
 		},
 	});
 }).call(this);
@@ -22323,20 +22465,20 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			var r = Gx.Utils.round;
 			this.centerInfoView.model.setAttrs(mapView.getCenter(), mapView.getZoom(), mapView.type);
 		},
-		setGeocodeResult: function(results, mapType) {
-			var latLng;
-			var r = Gx.Utils.round;
-			if (results[0] && results[0].geometry) {
-				latLng = Gx.latLng(results[0].geometry.location);
+		setGeocodeResult: function(models, mapType) {
+			var m = models[0], latLng;
+			if (!m) {
+				return;
 			}
+			latLng = m.get('latLng');
 			if (latLng) {
 				this.clickedPointView.model.setAttrs(latLng, null, mapType);
 			}
 			// clear all
 			this.addressResultsView.clear();
-			// add results
-			_.each(results, function(result) {
-				this.addressResultsView.add(result);
+			// add models
+			_.each(models, function(model) {
+				this.addressResultsView.add(model);
 			}, this);
 		},
 		toggle: function() {
@@ -22375,28 +22517,25 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 		initialize: function() {
 			_.bindAll(this, 'render', 'add', 'clear');
 			this.collection.bind('add', this.render);
+			this.tmplGoogle = _.template($('#tmpl_address_info_google').html());
+			this.tmplNominatim = _.template($('#tmpl_address_info_nominatim').html());
 		},
 		render: function(model) {
 			var view = new Gx.AddressUnitView({
-				model: model
+				model: model,
+				template: this.getTemplate(model)
 			});
 			this.$el.append(view.render().$el);
 			return this;
 		},
-		add: function(data) {
-			if (!data.formatted_address) {
-				return;
+		getTemplate: function(model) {
+			if (model instanceof Gx.AddressModelGoogle) {
+				return this.tmplGoogle;
+			} else if (model instanceof Gx.AddressModelNominatim) {
+				return this.tmplNominatim;
 			}
-			var model = new Gx.AddressModel({
-				address: data.formatted_address,
-				types: data.types.join(', '),
-				addressCompos: data.address_components.map(function(compo) {
-					return {
-						types: compo.types.join(', '),
-						longName: compo.long_name
-					};
-				})
-			});
+		},
+		add: function(model) {
 			this.collection.add(model);
 		},
 		clear: function() {
@@ -22408,9 +22547,9 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 	});
 	this.Gx.AddressUnitView = Backbone.View.extend({
 		tagName: 'div',
-		initialize: function() {
+		initialize: function(options) {
 			_.bindAll(this, 'render', 'remove');
-			this.template = _.template($('#tmpl_address_info').html());
+			this.template = options.template;
 			this.model.bind('destroy', this.remove);
 		},
 		render: function() {
@@ -22422,15 +22561,6 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 ;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.MapView = Backbone.View.extend({
-		saveState: function() {
-			var c = this.getCenter();
-			Gx.Utils.localStorageWrapper.data(Gx.lastStateKey, {
-				lat: c.lat,
-				lng: c.lng,
-				zoom: this.getZoom(),
-				type: this.type
-			});
-		},
 		getCenter: function() {
 			return Gx.latLng(this.map.getCenter());
 		},
@@ -22445,19 +22575,6 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 		},
 		isVisible: function() {
 			return this.$el.css('visibility') === 'visible';
-		},
-		updateQyeryString: function() {
-			if (!Gx.router || !this.isVisible()) {
-				return;
-			}
-			var c = this.getCenter();
-			var queries = [c.lat, c.lng, this.getZoom()].map(function(v) {
-				return Gx.Utils.round(+v, 7);
-			});
-			queries.push(this.type);
-			Gx.router.navigate(queries.join(','), {
-				replace: true
-			});
 		}
 	});
 }).call(this);
@@ -22484,7 +22601,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			this.map = new google.maps.Map(this.$el.get(0), mapOpts);
 			this.posMarker = null;
 		},
-		setListeners: function() {
+		setListeners: function(app) {
 			var map = this.map;
 			google.maps.event.addListener(map, 'click', function(me) {
 				app.jump(Gx.latLng(me.latLng));
@@ -22492,7 +22609,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			google.maps.event.addListener(map, 'bounds_changed', _.bind(function() {
 				app.infoView.refreshBounds(this);
 			}, this));
-			google.maps.event.addListener(map, 'idle', _.bind(this.updateQyeryString, this));
+			google.maps.event.addListener(map, 'idle', _.bind(app.updateQyeryString, this));
 		},
 		clearMarker: function() {
 			if (this.posMarker) {
@@ -22541,7 +22658,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			L.control.scale().addTo(this.map);
 			this.posMarker = null;
 		},
-		setListeners: function() {
+		setListeners: function(app) {
 			var map = this.map;
 			map.on('click', function(e) {
 				app.jump(Gx.latLng(e.latlng));
@@ -22549,7 +22666,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			map.on('drag', _.bind(function() {
 				app.infoView.refreshBounds(this);
 			}, this));
-			map.on('moveend dragend zoomend', _.bind(this.updateQyeryString, this));
+			map.on('moveend dragend zoomend', _.bind(app.updateQyeryString, this));
 		},
 		clearMarker: function() {
 			if (this.posMarker) {
@@ -22606,15 +22723,15 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 }).call(this);
 ;(function() {
 	this.Gx = this.Gx || {};
-	this.Gx.MapSwitchUnitModel = Backbone.Model.extend({
+	this.Gx.SwitchUnitModel = Backbone.Model.extend({
 		defaults: function() {
 			return {
 				key: '',
-				mapName: ''
+				name: ''
 			};
 		}
 	});
-	this.Gx.MapSwitchUnitCollection = Backbone.Collection.extend({});
+	this.Gx.SwitchUnitCollection = Backbone.Collection.extend({});
 }).call(this);
 ;(function() {
 	this.Gx = this.Gx || {};
@@ -22661,29 +22778,58 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 }).call(this);
 ;(function() {
 	this.Gx = this.Gx || {};
-	this.Gx.AddressModel = Backbone.Model.extend({
+	this.Gx.AddressModel = Backbone.Model.extend();
+	this.Gx.AddressCollection = Backbone.Collection.extend({
+		model: Gx.AddressModel
+	});
+}).call(this);
+;(function() {
+	this.Gx = this.Gx || {};
+	this.Gx.AddressModelGoogle = Gx.AddressModel.extend({
 		defaults: function() {
 			return {
+				latLng: null,
 				address: '',
 				types: '',
 				addressCompos: []
 			};
 		}
 	});
-	this.Gx.AddressCollection = Backbone.Collection.extend();
+}).call(this);
+;(function() {
+	this.Gx = this.Gx || {};
+	this.Gx.AddressModelNominatim = Gx.AddressModel.extend({
+		defaults: function() {
+			return {
+				latLng: null,
+				osm_type: '',
+				osm_id: '',
+				place_id: '',
+				type: '',
+				cls: '',
+				icon: '',
+				display_name: '',
+				address: []
+			};
+		}
+	});
 }).call(this);
 ;(function() {
 	this.Gx = this.Gx || {};
 	this.Gx.AppView = Backbone.View.extend({
 		el: '#wrapper',
 		initialize: function() {
+			_.bindAll(this, 'updateQyeryString')
 			L.Icon.Default.imagePath = 'images';
 			// Generate the Map, get last state from localStorage
 			var lastState = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
-			lastState.lat = lastState.lat || Gx.defaultState.lat;
-			lastState.lng = lastState.lng || Gx.defaultState.lng;
-			lastState.zoom = lastState.zoom || Gx.defaultState.zoom;
-			lastState.type = lastState.type || Gx.mapTypes.google.key;
+			lastState = _.defaults(lastState, {
+				lat: Gx.defaultState.lat,
+				lng: Gx.defaultState.lng,
+				zoom: Gx.defaultState.zoom,
+				mapType: Gx.mapTypes.google.key,
+				searcherType: Gx.searcherTypes.google.key
+			});
 			this.mapViews = [
 				new Gx.MapViewGoogle({
 					el: '#map_google',
@@ -22698,20 +22844,29 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 				})
 			];
 			this.mapView = _.findWhere(this.mapViews, {
-				type: lastState.type
+				type: lastState.mapType
 			});
 			this.setCurrentMapVisible();
-			this.searcher = new Gx.Searcher(this);
+			this.searchers = [
+				new Gx.SearcherGoogle(this),
+				new Gx.SearcherNominatim(this)
+			];
+			this.searcher = _.findWhere(this.searchers, {
+				type: lastState.searcherType
+			});
 			this.searchView = new Gx.SearchView({
 				searcher: this.searcher
 			});
 			this.infoView = new Gx.InfoView();
 			this.bookmarkView = new Gx.BookmarkView();
-			this.mapViews.forEach(function(view) {
-				view.setListeners();
-			});
+			_.each(this.mapViews, function(view) {
+				view.setListeners(this);
+			}, this);
 			this.mapSwitchView = new Gx.MapSwitchView({
-				initialType: lastState.type
+				initialType: lastState.mapType
+			});
+			this.searcherSwitchView = new Gx.SearcherSwitchView({
+				initialType: lastState.searcherType
 			});
 		},
 		jump: function(latLng, centering) {
@@ -22722,7 +22877,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			});
 			this.searcher.geocode(latLng, _.bind(function(results) {
 				this.render({
-					geocodeResults: results
+					geocodeResults: this.searcher.generateModels(results, latLng)
 				});
 			}, this));
 			this.bookmarkView.hide();
@@ -22774,7 +22929,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			this.infoView.clickedPointView.model.set({
 				mapType: nextType
 			});
-			this.mapView.updateQyeryString();
+			this.updateQyeryString();
 		},
 		setCurrentMapVisible: function() {
 			var m = this.mapView;
@@ -22783,6 +22938,41 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			}
 			this.mapViews.forEach(function(v) {
 				v.show(v.cid === m.cid);
+			});
+		},
+		toggleSearcher: function(nextType) {
+			var current = this.searcher;
+			if (current.type === nextType) {
+				return;
+			}
+			var next = _.findWhere(this.searchers, {
+				type: nextType
+			});
+			if (!next) {
+				return;
+			}
+			this.searcher = next;
+			this.searchView.setSearcher(this.searcher);
+			var markerPos = this.mapView.getMarkerPos();
+			if (!markerPos) {
+				return;
+			}
+			this.jump(markerPos);
+			this.updateQyeryString();
+		},
+		updateQyeryString: function() {
+			var m = this.mapView;
+			if (!Gx.router || !m.isVisible()) {
+				return;
+			}
+			var c = m.getCenter();
+			var queries = [c.lat, c.lng, m.getZoom()].map(function(v) {
+				return Gx.Utils.round(+v, 7);
+			});
+			queries.push(m.type);
+			queries.push(this.searcher.type);
+			Gx.router.navigate(queries.join(','), {
+				replace: true
 			});
 		},
 		fixer: function() {
@@ -22805,7 +22995,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 
 $(function() {
 	// Finally, create AppView to start the application.
-	window.app = new Gx.AppView();
+	Gx.app = new Gx.AppView();
 
 	// Start Router
 	var Router = Backbone.Router.extend({
@@ -22814,32 +23004,48 @@ $(function() {
 		},
 		jump: function(query) {
 			query = query || '';
-			var states;
-			if (query.match(/^(-{0,1}\d+\.{0,1}\d+,){2}\d+,[A-z]$/g)) {
-				states = this.splitQuery(query);
-				app.toggleMap(states.type);
+			var states = this.splitQuery(query);
+			if (states.valid) {
+				Gx.app.toggleMap(states.mapType);
+				Gx.app.toggleSearcher(states.searcherType);
 			} else {
 				states = {
-					latLng: app.mapView.getCenter(),
-					zoom: app.mapView.getZoom()
+					latLng: Gx.app.mapView.getCenter(),
+					zoom: Gx.app.mapView.getZoom()
 				};
-				app.infoView.refreshBounds(app.mapView);
+				Gx.app.infoView.refreshBounds(Gx.app.mapView);
 			}
-			app.jump(states.latLng, true).render({
+			Gx.app.jump(states.latLng, true).render({
 				zoom: states.zoom
 			});
-			app.mapSwitchView.setOption(app.mapView.type);
+			Gx.app.mapSwitchView.setOption(Gx.app.mapView.type);
 		},
 		splitQuery: function(query) {
+			// 35.6894875,139.6917064
+			// or
+			// 35.6894875,139.6917064,13,g,n
+			if (query.match(/^-{0,1}\d+\.{0,1}\d+,-{0,1}\d+\.{0,1}\d+$/g) ||
+				query.match(/^(-{0,1}\d+\.{0,1}\d+,){2}\d+(,[A-z]){2}$/g)) {
+				return {
+					valid: false
+				};
+			}
 			var sp = query.split(',');
 			var coords = sp.slice(0, 3).map(function(v) {
 				return +v;
 			});
-			return {
-				latLng: Gx.latLng(coords[0], coords[1]),
-				zoom: coords[2],
-				type: sp[3]
+			var ret = {
+				valid: true,
+				latLng: Gx.latLng(coords[0], coords[1])
 			};
+			if (sp.length == 2) {
+				return ret;
+			}
+			return _.extend(ret, {
+				zoom: coords[2],
+				mapType: sp[3],
+				searcherType: sp[4]
+			});
 		}
 	});
 	Gx.router = new Router();
@@ -22847,8 +23053,17 @@ $(function() {
 
 	// Save current state to localStorage on closing App
 	window.onbeforeunload = function() {
-		app.mapView.saveState();
-		app.bookmarkView.save();
+		var m = Gx.app.mapView;
+		var c = m.getCenter();
+		Gx.Utils.localStorageWrapper.data(Gx.lastStateKey, {
+			lat: c.lat,
+			lng: c.lng,
+			zoom: m.getZoom(),
+			mapType: m.type,
+			searcherType: Gx.app.searcher.type
+		});
+
+		Gx.app.bookmarkView.save();
 	};
 
 	// Set short-cut keys
@@ -22859,19 +23074,19 @@ $(function() {
 			'target': document
 		};
 		shortcut.add('Shift+PageUp', function() {
-			app.mapView.setZoom(app.mapView.getZoom() + 1);
+			Gx.app.mapView.setZoom(Gx.app.mapView.getZoom() + 1);
 		}, opts);
 		shortcut.add('Shift+PageDown', function() {
-			app.mapView.setZoom(app.mapView.getZoom() - 1);
+			Gx.app.mapView.setZoom(Gx.app.mapView.getZoom() - 1);
 		}, opts);
 		shortcut.add('Ctrl+Enter', function() {
-			app.infoView.toggle();
+			Gx.app.infoView.toggle();
 		}, opts);
 		shortcut.add('Ctrl+Q', function() {
-			app.searchView.focus();
+			Gx.app.searchView.focus();
 		}, opts);
 		shortcut.add('Ctrl+M', function() {
-			app.bookmarkView.toggleBookmark();
+			Gx.app.bookmarkView.toggleBookmark();
 		}, opts);
 
 	})();
@@ -22880,7 +23095,7 @@ $(function() {
 	(function(f) {
 		f();
 		$(window).resize(f);
-	})(_.bind(app.fixer, app));
+	})(_.bind(Gx.app.fixer, Gx.app));
 	// control box fixer
 	(function(el) {
 		var w = Array.prototype.slice.call(el.children()).map(function(child) {
