@@ -22281,8 +22281,8 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			}
 			this.collection.add({
 				locationName: val,
-				lat: latLng.lat(),
-				lng: latLng.lng()
+				lat: latLng.lat,
+				lng: latLng.lng
 			});
 			this.$input.val('');
 		},

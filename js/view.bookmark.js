@@ -108,8 +108,8 @@
 			}
 			this.collection.add({
 				locationName: val,
-				lat: latLng.lat(),
-				lng: latLng.lng()
+				lat: latLng.lat,
+				lng: latLng.lng
 			});
 			this.$input.val('');
 		},
