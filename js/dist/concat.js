@@ -21969,7 +21969,8 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 	this.Gx = this.Gx || {};
 	this.Gx.SearcherNominatim = Gx.Searcher.extend({
 		options: {
-			url: 'http://nominatim.openstreetmap.org/',
+			urlSearch: 'http://nominatim.openstreetmap.org/',
+			urlReverse: 'http://nominatim.openstreetmap.org/reverse',
 			type: 'GET',
 			dataType: 'json'
 		},
@@ -21978,31 +21979,69 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			this.app = app;
 		},
 		geocode: function(key, callback) {
-			var isLatLng = key instanceof Gx.LatLng;
+			var isLatLng = key instanceof Gx.LatLng, param;
 			if (isLatLng) {
-				key = key.getString();
+				param = this.getParamForReverseLatLng(key);
+			} else if (key.match(/^\d+,[A-z]$/g)) {
+				param = this.getParamForReverseOsmId(key);
+			} else {
+				param = this.getParamForSearch(key);
 			}
-			$.ajax({
-				url: this.options.url,
+			$.ajax(_.extend(param, {
+				success: function(data, status) {
+					callback(_.flatten([data]), key, isLatLng);
+				},
+				error: function() {}
+			}));
+		},
+		getParamForSearch: function(key) {
+			return {
+				url: this.options.urlSearch,
 				type: this.options.type,
 				dataType: this.options.dataType,
 				data: {
 					format: this.options.dataType,
 					addressdetails: 1,
-					// limit: 1,
 					q: key
-				},
-				success: function(data, status) {
-					callback(data, key, isLatLng);
-				},
-				error: function() {
-
 				}
+			};
+		},
+		getParamForReverseLatLng: function(latLng) {
+			return {
+				url: this.options.urlReverse,
+				type: this.options.type,
+				dataType: this.options.dataType,
+				data: {
+					format: this.options.dataType,
+					addressdetails: 1,
+					lat: latLng.lat,
+					lon: latLng.lng,
+				}
+			};
+		},
+		getParamForReverseOsmId: function(key) {
+			var sp = key.split(',').map(function(v) {
+				return '' + v;
 			});
+			return {
+				url: this.options.urlReverse,
+				type: this.options.type,
+				dataType: this.options.dataType,
+				data: {
+					format: this.options.dataType,
+					addressdetails: 1,
+					osm_id: sp[0],
+					osm_type: sp[1].toUpperCase()
+				}
+			};
 		},
 		geocodeCallback: function(results, key, isLatLng) {
 			var result = results[0];
 			var latLng;
+			if (result.error) {
+				console.log([results.error, key].join(':'));
+				return;
+			}
 			if (result.lat && result.lon) {
 				latLng = Gx.latLng(result.lat, result.lon);
 			}
