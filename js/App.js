@@ -3,7 +3,7 @@
 	this.Gx.AppView = Backbone.View.extend({
 		el: '#wrapper',
 		initialize: function() {
-			_.bindAll(this, 'updateQyeryString')
+			_.bindAll(this, 'updateQyeryString');
 			L.Icon.Default.imagePath = 'images';
 			// Generate the Map, get last state from localStorage
 			var lastState = this.getLastState();
@@ -50,7 +50,7 @@
 			var state = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
 			state = _.pick(state, function(v, k, o) {
 				return v !== null;
-			})
+			});
 			return _.defaults(state, {
 				lat: Gx.defaultState.lat,
 				lng: Gx.defaultState.lng,
