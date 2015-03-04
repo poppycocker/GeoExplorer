@@ -209,6 +209,7 @@ $(function() {
 				zoom: states.zoom
 			});
 			Gx.app.mapSwitchView.setOption(Gx.app.mapView.type);
+			Gx.app.searcherSwitchView.setOption(Gx.app.searcher.type);
 		},
 		splitQuery: function(query) {
 			// 35.6894875,139.6917064

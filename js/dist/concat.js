@@ -22733,7 +22733,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 		},
 		setZoom: function(val, animate) {
 			this.map.setZoom(val, {
-				animate: animate
+				animate: !!animate
 			});
 		},
 		fix: function() {
@@ -23066,6 +23066,7 @@ $(function() {
 				zoom: states.zoom
 			});
 			Gx.app.mapSwitchView.setOption(Gx.app.mapView.type);
+			Gx.app.searcherSwitchView.setOption(Gx.app.searcher.type);
 		},
 		splitQuery: function(query) {
 			// 35.6894875,139.6917064
