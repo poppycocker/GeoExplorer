@@ -17,7 +17,7 @@
 			map.on('click', function(e) {
 				app.jump(Gx.latLng(e.latlng));
 			});
-			map.on('drag', _.bind(function() {
+			map.on('drag moveend', _.bind(function() {
 				app.infoView.refreshBounds(this);
 			}, this));
 			map.on('moveend dragend zoomend', _.bind(app.updateQyeryString, this));
@@ -32,7 +32,7 @@
 			this.posMarker = L.marker(latLng.getLeaflet());
 			this.posMarker.addTo(this.map);
 			this.posMarker.on('click', _.bind(function(me) {
-				this.setCenter(Gx.latLng(me.latlng));
+				this.setCenter(Gx.latLng(me.latlng), true);
 			}, this));
 		},
 		getMarkerPos: function() {
@@ -41,7 +41,7 @@
 		},
 		setCenter: function(latLng, animate) {
 			this.map.panTo(latLng.getLeaflet(), {
-				animate: animate
+				animate: !!animate
 			});
 		},
 		setZoom: function(val, animate) {

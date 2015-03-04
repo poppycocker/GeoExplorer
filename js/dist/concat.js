@@ -22704,7 +22704,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			map.on('click', function(e) {
 				app.jump(Gx.latLng(e.latlng));
 			});
-			map.on('drag', _.bind(function() {
+			map.on('drag moveend', _.bind(function() {
 				app.infoView.refreshBounds(this);
 			}, this));
 			map.on('moveend dragend zoomend', _.bind(app.updateQyeryString, this));
@@ -22719,7 +22719,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			this.posMarker = L.marker(latLng.getLeaflet());
 			this.posMarker.addTo(this.map);
 			this.posMarker.on('click', _.bind(function(me) {
-				this.setCenter(Gx.latLng(me.latlng));
+				this.setCenter(Gx.latLng(me.latlng), true);
 			}, this));
 		},
 		getMarkerPos: function() {
@@ -22728,7 +22728,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 		},
 		setCenter: function(latLng, animate) {
 			this.map.panTo(latLng.getLeaflet(), {
-				animate: animate
+				animate: !!animate
 			});
 		},
 		setZoom: function(val, animate) {
@@ -22860,7 +22860,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 	this.Gx.AppView = Backbone.View.extend({
 		el: '#wrapper',
 		initialize: function() {
-			_.bindAll(this, 'updateQyeryString')
+			_.bindAll(this, 'updateQyeryString');
 			L.Icon.Default.imagePath = 'images';
 			// Generate the Map, get last state from localStorage
 			var lastState = this.getLastState();
@@ -22907,7 +22907,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			var state = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
 			state = _.pick(state, function(v, k, o) {
 				return v !== null;
-			})
+			});
 			return _.defaults(state, {
 				lat: Gx.defaultState.lat,
 				lng: Gx.defaultState.lng,
