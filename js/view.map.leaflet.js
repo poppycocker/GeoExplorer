@@ -46,7 +46,7 @@
 		},
 		setZoom: function(val, animate) {
 			this.map.setZoom(val, {
-				animate: animate
+				animate: !!animate
 			});
 		},
 		fix: function() {
