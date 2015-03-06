@@ -69,10 +69,14 @@
 			};
 		},
 		geocodeCallback: function(results, key, isLatLng) {
+			if (!results.length) {
+				this.app.showNoResult();
+				return;
+			}
 			var result = results[0];
 			var latLng;
 			if (result.error) {
-				console.log([results.error, key].join(':'));
+				this.app.showMessage([results.error, key].join(':'));
 				return;
 			}
 			if (result.lat && result.lon) {
@@ -90,6 +94,10 @@
 			});
 		},
 		generateModels: function(results) {
+			if (results[0] && results[0].error) {
+				this.app.showMessage(results[0].error);
+				return [];
+			}
 			return _.map(results, function(result) {
 				return new Gx.AddressModelNominatim({
 					latLng: this.getLatLngFromResult(result),

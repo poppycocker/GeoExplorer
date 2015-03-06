@@ -67,6 +67,7 @@ module.exports = function(grunt) {
                     'js/view.map.js',
                     'js/view.map.google.js',
                     'js/view.map.leaflet.js',
+                    'js/view.message.js',
                     'js/model.bookmark.js',
                     'js/model.switch.js',
                     'js/model.position.js',

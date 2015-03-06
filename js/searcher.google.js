@@ -29,6 +29,10 @@
 			});
 		},
 		geocodeCallback: function(results, key, isLatLng) {
+			if (!results.length) {
+				this.app.showNoResult();
+				return;
+			}
 			var latLng;
 			if (results[0] && results[0].geometry) {
 				latLng = Gx.latLng(results[0].geometry.location);
@@ -46,11 +50,13 @@
 		},
 		generateModels: function(results) {
 			return _.map(results, function(result) {
+				var types = result.types ? result.types.join(', ') : '';
+				var compos = result.address_components || [];
 				return new Gx.AddressModelGoogle({
 					latLng: this.getLatLngFromResult(result),
 					address: result.formatted_address,
-					types: result.types.join(', '),
-					addressCompos: result.address_components.map(function(compo) {
+					types: types,
+					addressCompos: compos.map(function(compo) {
 						return {
 							types: compo.types.join(', '),
 							longName: compo.long_name

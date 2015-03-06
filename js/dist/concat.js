@@ -21926,6 +21926,10 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			});
 		},
 		geocodeCallback: function(results, key, isLatLng) {
+			if (!results.length) {
+				this.app.showNoResult();
+				return;
+			}
 			var latLng;
 			if (results[0] && results[0].geometry) {
 				latLng = Gx.latLng(results[0].geometry.location);
@@ -21943,11 +21947,13 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 		},
 		generateModels: function(results) {
 			return _.map(results, function(result) {
+				var types = result.types ? result.types.join(', ') : '';
+				var compos = result.address_components || [];
 				return new Gx.AddressModelGoogle({
 					latLng: this.getLatLngFromResult(result),
 					address: result.formatted_address,
-					types: result.types.join(', '),
-					addressCompos: result.address_components.map(function(compo) {
+					types: types,
+					addressCompos: compos.map(function(compo) {
 						return {
 							types: compo.types.join(', '),
 							longName: compo.long_name
@@ -22036,10 +22042,14 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			};
 		},
 		geocodeCallback: function(results, key, isLatLng) {
+			if (!results.length) {
+				this.app.showNoResult();
+				return;
+			}
 			var result = results[0];
 			var latLng;
 			if (result.error) {
-				console.log([results.error, key].join(':'));
+				this.app.showMessage([results.error, key].join(':'));
 				return;
 			}
 			if (result.lat && result.lon) {
@@ -22057,6 +22067,10 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			});
 		},
 		generateModels: function(results) {
+			if (results[0] && results[0].error) {
+				this.app.showMessage(results[0].error);
+				return [];
+			}
 			return _.map(results, function(result) {
 				return new Gx.AddressModelNominatim({
 					latLng: this.getLatLngFromResult(result),
@@ -22747,6 +22761,28 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 }).call(this);
 ;(function() {
 	this.Gx = this.Gx || {};
+	this.Gx.MessageView = Backbone.View.extend({
+		el: '.message',
+		initialize: function(options) {
+			this.$el.val('');
+			$.easing.easeGxMessage = function(x, t, b, c, d) {
+				return x * x;
+			};
+		},
+		show: function(message) {
+			this.$el.html(message).css({
+				opacity: 1
+			}).animate({
+				opacity: 0
+			}, 1800, 'easeGxMessage');
+		},
+		showNoResult: function() {
+			this.show('No Result.');
+		}
+	});
+}).call(this);
+;(function() {
+	this.Gx = this.Gx || {};
 	this.Gx.BookmarkModel = Backbone.Model.extend({
 		defaults: function() {
 			return {
@@ -22902,6 +22938,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			this.searcherSwitchView = new Gx.SearcherSwitchView({
 				initialType: lastState.searcherType
 			});
+			this.messageView = new Gx.MessageView();
 		},
 		getLastState: function() {
 			var state = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
@@ -23006,6 +23043,12 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			}
 			this.jump(markerPos);
 			this.updateQyeryString();
+		},
+		showMessage: function(message) {
+			this.messageView.show(message);
+		},
+		showNoResult: function() {
+			this.messageView.showNoResult();
 		},
 		updateQyeryString: function() {
 			var m = this.mapView;
@@ -23147,10 +23190,10 @@ $(function() {
 	// control box fixer
 	(function(el) {
 		var w = Array.prototype.slice.call(el.children()).map(function(child) {
-			return $(child).width();
+			return $(child).outerWidth();
 		}).reduce(function(prev, current) {
 			return prev + current;
-		}) + 1;
+		}) + 2;
 		el.css({
 			width: w + 'px'
 		});

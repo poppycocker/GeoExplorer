@@ -45,6 +45,7 @@
 			this.searcherSwitchView = new Gx.SearcherSwitchView({
 				initialType: lastState.searcherType
 			});
+			this.messageView = new Gx.MessageView();
 		},
 		getLastState: function() {
 			var state = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
@@ -149,6 +150,12 @@
 			}
 			this.jump(markerPos);
 			this.updateQyeryString();
+		},
+		showMessage: function(message) {
+			this.messageView.show(message);
+		},
+		showNoResult: function() {
+			this.messageView.showNoResult();
 		},
 		updateQyeryString: function() {
 			var m = this.mapView;
@@ -290,10 +297,10 @@ $(function() {
 	// control box fixer
 	(function(el) {
 		var w = Array.prototype.slice.call(el.children()).map(function(child) {
-			return $(child).width();
+			return $(child).outerWidth();
 		}).reduce(function(prev, current) {
 			return prev + current;
-		}) + 1;
+		}) + 2;
 		el.css({
 			width: w + 'px'
 		});
