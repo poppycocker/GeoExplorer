@@ -21911,19 +21911,13 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 			} else {
 				q.address = key;
 			}
-			this.geocoder.geocode(q, function(results, status) {
+			this.geocoder.geocode(q, _.bind(function(results, status) {
 				if (status !== google.maps.GeocoderStatus.OK) {
 					results = [];
-					if (q.latLng) {
-						results.push({
-							geometry: {
-								location: q.latLng
-							}
-						});
-					}
+					this.app.showMessage(status);
 				}
 				callback(results, key, isLatLng);
-			});
+			}, this));
 		},
 		geocodeCallback: function(results, key, isLatLng) {
 			if (!results.length) {
