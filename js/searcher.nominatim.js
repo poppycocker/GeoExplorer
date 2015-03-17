@@ -76,7 +76,7 @@
 			var result = results[0];
 			var latLng;
 			if (result.error) {
-				this.app.showMessage([results.error, key].join(':'));
+				this.app.showMessage(result.error);
 				return;
 			}
 			if (result.lat && result.lon) {
