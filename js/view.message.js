@@ -13,7 +13,7 @@
 				opacity: 1
 			}).animate({
 				opacity: 0
-			}, 1800, 'easeGxMessage');
+			}, 2500, 'easeGxMessage');
 		},
 		showNoResult: function() {
 			this.show('No Result.');
