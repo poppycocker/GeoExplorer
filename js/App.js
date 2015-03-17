@@ -32,7 +32,8 @@
 				type: lastState.searcherType
 			});
 			this.searchView = new Gx.SearchView({
-				searcher: this.searcher
+				searcher: this.searcher,
+				initialQuery: lastState.searchQuery
 			});
 			this.infoView = new Gx.InfoView();
 			this.bookmarkView = new Gx.BookmarkView();
@@ -57,7 +58,8 @@
 				lng: Gx.defaultState.lng,
 				zoom: Gx.defaultState.zoom,
 				mapType: Gx.mapTypes.google.key,
-				searcherType: Gx.searcherTypes.google.key
+				searcherType: Gx.searcherTypes.google.key,
+				searchQuery: ''
 			});
 		},
 		jump: function(latLng, centering) {
@@ -252,13 +254,15 @@ $(function() {
 	// Save current state to localStorage on closing App
 	window.onbeforeunload = function() {
 		var m = Gx.app.mapView;
+		var s = Gx.app.searchView;
 		var c = m.getCenter();
 		Gx.Utils.localStorageWrapper.data(Gx.lastStateKey, {
 			lat: c.lat,
 			lng: c.lng,
 			zoom: m.getZoom(),
 			mapType: m.type,
-			searcherType: Gx.app.searcher.type
+			searcherType: Gx.app.searcher.type,
+			searchQuery: s.$el.val()
 		});
 
 		Gx.app.bookmarkView.save();

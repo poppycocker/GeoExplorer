@@ -8,7 +8,7 @@
 		initialize: function(options) {
 			_.bindAll(this, 'onSearch', 'focus');
 			this.setSearcher(options.searcher);
-			this.$el.val('');
+			this.$el.val(options.initialQuery || '');
 		},
 		onSearch: function(e) {
 			var str = this.$el.val();
