@@ -21687,7 +21687,7 @@ b.run=function(h){d.each(e,function(f,l){a[l]=j(c[l],i,h)})}}}})(jQuery);
 		},
 		nominatim: {
 			key: 'n',
-			name: 'Nominatim'
+			name: 'OSM Nominatim'
 		}
 	};
 	this.Gx.defaultState = {

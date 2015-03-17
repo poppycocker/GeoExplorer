@@ -17,7 +17,7 @@
 		},
 		nominatim: {
 			key: 'n',
-			name: 'Nominatim'
+			name: 'OSM Nominatim'
 		}
 	};
 	this.Gx.defaultState = {
