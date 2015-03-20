@@ -2,21 +2,25 @@
 	this.Gx = this.Gx || {};
 	this.Gx.mapTypes = {
 		google: {
-			key: 'g',
+			key: 'ggm',
 			name: 'GoogleMap'
 		},
 		osm: {
-			key: 'o',
+			key: 'osm',
 			name: 'OpenStreetMap'
+		},
+		gsi_std: {
+			key: 'gss',
+			name: 'GSI std.'
 		}
 	};
 	this.Gx.searcherTypes = {
 		google: {
-			key: 'g',
+			key: 'ggc',
 			name: 'Google Geocoding API'
 		},
 		nominatim: {
-			key: 'n',
+			key: 'nmn',
 			name: 'OSM Nominatim'
 		}
 	};

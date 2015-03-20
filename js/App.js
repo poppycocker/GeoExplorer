@@ -17,7 +17,18 @@
 					lastState: lastState,
 					type: Gx.mapTypes.osm.key,
 					tileUrl: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
-					attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="http://mapbox.com">Mapbox</a>'
+					attribution: [
+						'Map data &copy; <a href="http://openstreetmap.org" target="_blank">OpenStreetMap</a> contributors',
+						'<a href="http://creativecommons.org/licenses/by-sa/2.0/" target="_blank">CC-BY-SA</a>',
+						'Imagery &copy; <a href="http://mapbox.com" target="_blank">Mapbox</a>'
+					].join(', ')
+				}),
+				new Gx.MapViewLeaflet({
+					el: '#map_gss',
+					lastState: lastState,
+					type: Gx.mapTypes.gsi_std.key,
+					tileUrl: 'http://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
+					attribution: 'Map data &copy; <a href="http://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html" target="_blank">国土地理院</a>'
 				})
 			];
 			this.mapView = _.findWhere(this.mapViews, {
@@ -49,18 +60,36 @@
 			this.messageView = new Gx.MessageView();
 		},
 		getLastState: function() {
+			var d = Gx.defaultState;
 			var state = Gx.Utils.localStorageWrapper.data(Gx.lastStateKey) || {};
 			state = _.pick(state, function(v, k, o) {
 				return v !== null;
 			});
-			return _.defaults(state, {
-				lat: Gx.defaultState.lat,
-				lng: Gx.defaultState.lng,
-				zoom: Gx.defaultState.zoom,
+			state = _.defaults(state, {
+				lat: d.lat,
+				lng: d.lng,
+				zoom: d.zoom,
 				mapType: Gx.mapTypes.google.key,
 				searcherType: Gx.searcherTypes.google.key,
 				searchQuery: ''
 			});
+			// check
+			if (state.lat < -90 || 90 < state.lat) {
+				state.lat = d.lat;
+			}
+			if (state.lng < -180 || 180 < state.lng) {
+				state.lng = d.lng;
+			}
+			if (state.zoom < 0 || 18 < state.zoom) {
+				state.zoom = d.zoom;
+			}
+			if (!_.findWhere(Gx.mapTypes, {key: state.mapType})) {
+				state.mapType = Gx.mapTypes.google.key;
+			}
+			if (!_.findWhere(Gx.searcherTypes, {key: state.searcherType})) {
+				state.searcherType = Gx.searcherTypes.google.key;
+			}
+			return state;
 		},
 		jump: function(latLng, centering) {
 			// latLng: Gx.LatLng
@@ -223,9 +252,9 @@ $(function() {
 		splitQuery: function(query) {
 			// 35.6894875,139.6917064
 			// or
-			// 35.6894875,139.6917064,13,g,n
+			// 35.6894875,139.6917064,13,ggl,nmn
 			if (!query.match(/^-{0,1}\d+\.{0,1}\d+,-{0,1}\d+\.{0,1}\d+$/g) &&
-				!query.match(/^(-{0,1}\d+\.{0,1}\d+,){2}\d+(,[A-z]){2}$/g)) {
+				!query.match(/^(-{0,1}\d+\.{0,1}\d+,){2}\d+(,[A-z]{3}){2}$/g)) {
 				return {
 					valid: false
 				};

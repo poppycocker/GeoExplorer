@@ -67,8 +67,7 @@ a
     height: 100%;
 }
 
-#map_google,
-#map_osm
+.map-canvas
 {
     position: absolute;
     top: 0;
