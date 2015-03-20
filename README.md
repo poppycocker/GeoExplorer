@@ -9,6 +9,7 @@ http://poppycocker.github.io/GeoExplorer/
 ## Viewable Maps:
 * Google Maps
 * OpenStreetMap
+* GSI(Geospatial Information Authority of Japan) standard map
 
 ## Available Geocoders:
 * Google Geocoding API
