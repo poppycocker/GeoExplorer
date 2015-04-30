@@ -7,7 +7,8 @@
 			this.map = L.map(this.$el.attr('id')).setView(latLng, init.zoom);
 			L.tileLayer(options.tileUrl, {
 				attribution: options.attribution,
-				maxZoom: 21
+				maxZoom: 21,
+				errorTileUrl: 'images/no_map_available.png'
 			}).addTo(this.map);
 			L.control.scale().addTo(this.map);
 			this.posMarker = null;
