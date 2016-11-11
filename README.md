@@ -15,7 +15,12 @@ http://poppycocker.github.io/GeoExplorer/
 * Google Geocoding API
 * OpenStreetMap Nominatim
  
-## Search by osm_id
+## Notice: Google Maps API Key
+The key set in this project is only available on hosts below.
+- poppycocker.github.io/
+- localhost:8086/
+
+## How to search by osm_id
 Choose Nominatim as geocoder, type like below in search-field and hit enter.
 > osm_id,osm_type[N|W|R]
 
