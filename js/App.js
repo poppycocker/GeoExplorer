@@ -16,19 +16,19 @@
 					el: '#map_osm',
 					lastState: lastState,
 					type: Gx.mapTypes.osm.key,
-					tileUrl: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
+					tileUrl: 'https://{s}.tile.osm.org/{z}/{x}/{y}.png',
 					attribution: [
-						'Map data &copy; <a href="http://openstreetmap.org" target="_blank">OpenStreetMap</a> contributors',
-						'<a href="http://creativecommons.org/licenses/by-sa/2.0/" target="_blank">CC-BY-SA</a>',
-						'Imagery &copy; <a href="http://mapbox.com" target="_blank">Mapbox</a>'
+						'Map data &copy; <a href="https://openstreetmap.org" target="_blank">OpenStreetMap</a> contributors',
+						'<a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_blank">CC-BY-SA</a>',
+						'Imagery &copy; <a href="https://mapbox.com" target="_blank">Mapbox</a>'
 					].join(', ')
 				}),
 				new Gx.MapViewLeaflet({
 					el: '#map_gss',
 					lastState: lastState,
 					type: Gx.mapTypes.gsi_std.key,
-					tileUrl: 'http://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
-					attribution: 'Map data &copy; <a href="http://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html" target="_blank">国土地理院</a>'
+					tileUrl: 'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
+					attribution: 'Map data &copy; <a href="https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html" target="_blank">国土地理院</a>'
 				})
 			];
 			this.mapView = _.findWhere(this.mapViews, {

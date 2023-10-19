@@ -2,8 +2,8 @@
 	this.Gx = this.Gx || {};
 	this.Gx.SearcherNominatim = Gx.Searcher.extend({
 		options: {
-			urlSearch: 'http://nominatim.openstreetmap.org/',
-			urlReverse: 'http://nominatim.openstreetmap.org/reverse',
+			urlSearch: 'https://nominatim.openstreetmap.org/',
+			urlReverse: 'https://nominatim.openstreetmap.org/reverse',
 			type: 'GET',
 			dataType: 'json'
 		},

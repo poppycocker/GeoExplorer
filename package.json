@@ -4,6 +4,7 @@
   "description": "GeoExplorer",
   "main": "Gruntfile.js",
   "dependencies": {
+    "bower": "^1.8.14",
     "grunt": "^0.4.5",
     "grunt-contrib-concat": "^0.5.0",
     "grunt-contrib-uglify": "^0.7.0",
@@ -25,5 +26,5 @@
   "bugs": {
     "url": "https://github.com/poppycocker/GeoExplorer/issues"
   },
-  "homepage": "http://poppycocker.github.io/GeoExplorer/"
+  "homepage": "https://poppycocker.github.io/GeoExplorer/"
 }
